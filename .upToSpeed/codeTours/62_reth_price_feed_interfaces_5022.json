@@ -1,0 +1,87 @@
+{
+  "title": "6.2: RETH Price Feed: Interfaces",
+  "id": "wudbgaMF2DjsoQZHEAamsoBUSJ0uAF8sGh+eUODjZHw=",
+  "originalId": 5022,
+  "position": 12,
+  "type": "text",
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "Let's explore the key interfaces that power the `RETH` price feed system, focusing on how `RETH`'s exchange rate is obtained and how external systems access its **USD** price.",
+      "title": "",
+      "id": "60857"
+    },
+    {
+      "type": "highlight",
+      "description": "The `IRETHToken` interface defines how to interact with RETH tokens. The `getExchangeRate()` function on line 6 returns the current exchange rate between RETH and its underlying asset (ETH). This rate tells us exactly how much actual ETH each RETH token represents in Rocket Pool's staking protocol. Importantly, this rate increases over time as staking rewards accrue, so RETH tokens appreciate rather than maintaining a 1:1 relationship with ETH.",
+      "file": "contracts/src/Interfaces/IRETHToken.sol",
+      "highlight": [
+        {
+          "start": 1,
+          "end": 8
+        }
+      ],
+      "title": "",
+      "id": "60860"
+    },
+    {
+      "type": "highlight",
+      "description": "In `IRETHPriceFeed.sol`, the `fetchPrice()` function is available through interface inheritance. While not explicitly declared here, `IRETHPriceFeed` extends `IMainnetPriceFeed` on line 7, which means any contract implementing `IRETHPriceFeed` must provide the `fetchPrice()` function. This is the function that the rest of the system will call to get the price of RETH in USD, and this interface ensures compatibility with other price feed contracts.",
+      "file": "contracts/src/Interfaces/IRETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 1,
+          "end": 10
+        }
+      ],
+      "title": "",
+      "id": "60861"
+    },
+    {
+      "type": "highlight",
+      "description": "`IMainnetPriceFeed` extends `IPriceFeed` on line 7, completing the inheritance chain that brings `fetchPrice()` into `IRETHPriceFeed`. This design allows `IRETHPriceFeed` to inherit all standard price feed functionality while adding RETH-specific features.",
+      "file": "contracts/src/Interfaces/IMainnetPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 7,
+          "end": 16
+        }
+      ],
+      "title": "",
+      "id": "60864"
+    },
+    {
+      "type": "highlight",
+      "description": "Here's the `fetchPrice()` function signature that `IRETHPriceFeed` inherits and exposes to callers. Line 6 shows it returns both a price value (`uint256`) and a boolean indicating price validity. This boolean tells consumers whether the price is fresh and reliable. Through inheritance, `IRETHPriceFeed` can be used interchangeably with any other price feed in the system.",
+      "file": "contracts/src/Interfaces/IPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 5,
+          "end": 9
+        }
+      ],
+      "title": "",
+      "id": "60865"
+    },
+    {
+      "type": "textOnly",
+      "description": "When external systems call `fetchPrice()` on an `IRETHPriceFeed` contract, they're invoking this inherited function that calculates RETH's USD price. The implementation multiplies the RETH-to-ETH exchange rate from `getExchangeRate()` with the current ETH-to-USD price: **RETH_USD_Price** = **RETH_ETH_Rate** × **ETH_USD_Price**. This mathematical combination delivers the final RETH price in USD while maintaining full compatibility with the broader price feed ecosystem.",
+      "title": "",
+      "id": "60868"
+    },
+    {
+      "type": "mcq",
+      "description": "Based on the interfaces, how does a contract implementing `IRETHPriceFeed` most likely calculate the USD price of RETH when `fetchPrice()` is called?\n\nOptions:\n\n A). It directly queries a dedicated Chainlink RETH/USD price feed.\n\nB). It combines the RETH/ETH exchange rate from `getExchangeRate()` with the ETH/USD price from another oracle.\n\nC). It returns the raw RETH/ETH exchange rate from `getExchangeRate()` without converting it to USD.\n\n\nCorrect: B). It combines the RETH/ETH exchange rate from `getExchangeRate()` with the ETH/USD price from another oracle.\n\nExplanation: The correct approach is to combine rates. The `fetchPrice` implementation will call `IRETHToken.getExchangeRate()` to get the RETH/ETH rate and then multiply it by the ETH/USD price from a separate oracle. This compositional approach is common when a direct, liquid oracle for a derived asset doesn't exist. Directly querying a RETH/USD feed is a possible architecture, but not the one implied by the interfaces shown. Simply returning the RETH/ETH rate would not fulfill the function's purpose of providing a USD price.",
+      "title": "",
+      "id": "60867",
+      "text": "Based on the interfaces, how does a contract implementing `IRETHPriceFeed` most likely calculate the USD price of RETH when `fetchPrice()` is called?",
+      "answers": [
+        "It directly queries a dedicated Chainlink RETH/USD price feed.",
+        "It combines the RETH/ETH exchange rate from `getExchangeRate()` with the ETH/USD price from another oracle.",
+        "It returns the raw RETH/ETH exchange rate from `getExchangeRate()` without converting it to USD."
+      ],
+      "correct": 1,
+      "explanation": "The correct approach is to combine rates. The `fetchPrice` implementation will call `IRETHToken.getExchangeRate()` to get the RETH/ETH rate and then multiply it by the ETH/USD price from a separate oracle. This compositional approach is common when a direct, liquid oracle for a derived asset doesn't exist. Directly querying a RETH/USD feed is a possible architecture, but not the one implied by the interfaces shown. Simply returning the RETH/ETH rate would not fulfill the function's purpose of providing a USD price."
+    }
+  ]
+}

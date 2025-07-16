@@ -1,0 +1,227 @@
+{
+  "title": "1.1: Asymmetry Protocol: A High-Level Overview",
+  "id": "bjEGll4e4dF+kx8amcYAoLUvTYVKmec2ADv9aqFDLXc=",
+  "originalId": 5146,
+  "position": 1,
+  "type": "text",
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "`Asymmetry` is a decentralized, over-collateralized, interest-free borrowing protocol. Users lock `ETH` (or other supported assets) as collateral to draw **BOLD**, a USD-pegged stablecoin. The system uses collateral ratios and liquidation mechanisms to ensure solvency and protection for all participants.",
+      "title": "",
+      "id": "63017"
+    },
+    {
+      "type": "textOnly",
+      "description": "Key concepts:\n\n* **Trove (CDP)**: a user’s collateralized debt position\n* **Individual Collateral Ratio (ICR)**: `collateral × price / debt`\n* **Total Collateral Ratio (TCR)**: system-wide ICR\n* **MCR**: minimum ICR per trove\n* **BCR**: extra buffer for batch troves\n* **CCR**: critical system ratio (restrictions below)\n* **SCR**: shutdown threshold (branch disabled below)",
+      "title": "",
+      "id": "63018"
+    },
+    {
+      "type": "highlight",
+      "description": "`Constructor` loads system ratios from the registry. These constants govern borrowing and shutdown logic.",
+      "file": "contracts/src/BorrowerOperations.sol",
+      "highlight": [
+        {
+          "start": 178,
+          "end": 186
+        }
+      ],
+      "title": "",
+      "id": "63019"
+    },
+    {
+      "type": "highlight",
+      "description": "`ICR` is computed here and compared to `MCR`. Troves below `MCR` are rejected.",
+      "file": "contracts/src/BorrowerOperations.sol",
+      "highlight": [
+        {
+          "start": 341,
+          "end": 348
+        }
+      ],
+      "title": "",
+      "id": "63020"
+    },
+    {
+      "type": "highlight",
+      "description": "TCR is checked against CCR. Ensures global solvency.",
+      "file": "contracts/src/BorrowerOperations.sol",
+      "highlight": [
+        {
+          "start": 360,
+          "end": 364
+        }
+      ],
+      "title": "",
+      "id": "63021"
+    },
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/BorrowerOperations.sol"
+      ],
+      "description": "When a user opens a trove, they call `openTrove`. This facade handles validation, fee calculation, collateral transfer, and delegates to core logic in `TroveManager`.",
+      "title": "",
+      "id": "63022"
+    },
+    {
+      "type": "highlight",
+      "description": "Finally, the trove is registered with the `TroveManager` and inserted into the `SortedTroves` list.",
+      "file": "contracts/src/BorrowerOperations.sol",
+      "highlight": [
+        {
+          "start": 233,
+          "end": 240
+        }
+      ],
+      "title": "",
+      "id": "63023"
+    },
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/TroveManager.sol"
+      ],
+      "description": "`TroveManager` stores trove data, mints an NFT, updates total stakes, and emits events. It is the **sole source of truth** for trove states.",
+      "title": "",
+      "id": "63024"
+    },
+    {
+      "type": "highlight",
+      "description": "The `TroveManager` then populates the `Trove` struct for the new position.",
+      "file": "contracts/src/TroveManager.sol",
+      "highlight": [
+        {
+          "start": 1232,
+          "end": 1240
+        }
+      ],
+      "title": "",
+      "id": "63025"
+    },
+    {
+      "type": "mcq",
+      "description": "When a user calls `openTrove` in `BorrowerOperations.sol`, what is the primary role of the `TroveManager.sol` contract in that specific transaction?\n\nOptions:\n\n A). To perform initial validation checks, such as ensuring the new trove's ICR is above the MCR.\n\nB). To durably record the new trove's state (debt, collateral, status) and mint the corresponding Trove NFT.\n\nC). To add the new trove to the interest-rate-sorted doubly-linked list for efficient redemptions.\n\n\nCorrect: B). To durably record the new trove's state (debt, collateral, status) and mint the corresponding Trove NFT.\n\nExplanation: That's right. The `TroveManager` is responsible for the core state changes. `BorrowerOperations` handles the initial checks and then calls `TroveManager` to actually create the trove and mint the NFT. `SortedTroves` is then called to place the new trove in the sorted list. This separation of concerns is a pattern you'll see throughout the system.",
+      "title": "",
+      "id": "63073",
+      "text": "When a user calls `openTrove` in `BorrowerOperations.sol`, what is the primary role of the `TroveManager.sol` contract in that specific transaction?",
+      "answers": [
+        "To perform initial validation checks, such as ensuring the new trove's ICR is above the MCR.",
+        "To durably record the new trove's state (debt, collateral, status) and mint the corresponding Trove NFT.",
+        "To add the new trove to the interest-rate-sorted doubly-linked list for efficient redemptions."
+      ],
+      "correct": 1,
+      "explanation": "That's right. The `TroveManager` is responsible for the core state changes. `BorrowerOperations` handles the initial checks and then calls `TroveManager` to actually create the trove and mint the NFT. `SortedTroves` is then called to place the new trove in the sorted list. This separation of concerns is a pattern you'll see throughout the system."
+    },
+    {
+      "type": "mcq",
+      "description": "Based on the architecture, what is the primary role of `BorrowerOperations.sol` when a user opens a trove?\n\nOptions:\n\n A). It directly updates the trove's state, mints the NFT, and adjusts system-wide collateral totals.\n\nB). It inserts the new trove into the StabilityPool to provide liquidity for potential system shortfalls.\n\nC). It serves as a facade, handling input validation and fee calculations before delegating core state updates to TroveManager.sol.\n\nD). It queries the PriceFeed for the latest collateral price and stores it directly in the new trove struct.\n\n\nCorrect: C). It serves as a facade, handling input validation and fee calculations before delegating core state updates to TroveManager.sol.\n\nExplanation: `BorrowerOperations.sol` acts as a facade, a common design pattern that separates user-facing logic from core system logic. It handles initial checks, calculates fees, and prepares data, but then calls `TroveManager.sol` to perform the actual state changes. `TroveManager` is the contract that modifies the `Troves` mapping and mints the NFT. This separation improves modularity and isolates critical state-mutating logic.",
+      "title": "",
+      "id": "63074",
+      "text": "Based on the architecture, what is the primary role of `BorrowerOperations.sol` when a user opens a trove?",
+      "answers": [
+        "It directly updates the trove's state, mints the NFT, and adjusts system-wide collateral totals.",
+        "It inserts the new trove into the StabilityPool to provide liquidity for potential system shortfalls.",
+        "It serves as a facade, handling input validation and fee calculations before delegating core state updates to TroveManager.sol.",
+        "It queries the PriceFeed for the latest collateral price and stores it directly in the new trove struct."
+      ],
+      "correct": 2,
+      "explanation": "`BorrowerOperations.sol` acts as a facade, a common design pattern that separates user-facing logic from core system logic. It handles initial checks, calculates fees, and prepares data, but then calls `TroveManager.sol` to perform the actual state changes. `TroveManager` is the contract that modifies the `Troves` mapping and mints the NFT. This separation improves modularity and isolates critical state-mutating logic."
+    },
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/SortedTroves.sol"
+      ],
+      "description": "`SortedTroves` keeps an on-chain, descending, doubly-linked list of active troves keyed by interest rate. This enables O(1) insertion/removal and O(k) scans for redemptions/liquidations.",
+      "title": "",
+      "id": "63026"
+    },
+    {
+      "type": "highlight",
+      "description": "This function is called by `BorrowerOperations` to add a new trove to the sorted list. It first calls the internal `_insertSlice` function to handle the core linked list insertion logic. Then, it marks the new trove's ID as existing in the `nodes` mapping and increments the total `size` of the list.",
+      "file": "contracts/src/SortedTroves.sol",
+      "highlight": [
+        {
+          "start": 129,
+          "end": 137
+        }
+      ],
+      "title": "",
+      "id": "63027"
+    },
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/StabilityPool.sol"
+      ],
+      "description": "Users deposit **BOLD** into `StabilityPool` to earn collateral gains when troves liquidate. Deposits compound via a running product `P` and sum `S` model for O(1) updates.",
+      "title": "",
+      "id": "63028"
+    },
+    {
+      "type": "highlight",
+      "description": "During liquidation, `TroveManager` calls.",
+      "file": "contracts/src/StabilityPool.sol",
+      "highlight": [
+        {
+          "start": 383,
+          "end": 388
+        }
+      ],
+      "title": "",
+      "id": "63029"
+    },
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/CollateralRegistry.sol"
+      ],
+      "description": "`CollateralRegistry` orchestrates redemptions across multiple collateral branches. It batches calls to each branch’s `TroveManager` to redeem unbacked debt.",
+      "title": "",
+      "id": "63030"
+    },
+    {
+      "type": "highlight",
+      "description": "The `redeemCollateral` function orchestrates redemptions across all supported collateral types.",
+      "file": "contracts/src/CollateralRegistry.sol",
+      "highlight": [
+        {
+          "start": 92,
+          "end": 98
+        }
+      ],
+      "title": "",
+      "id": "63031"
+    },
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/PriceFeeds/WETHPriceFeed.sol"
+      ],
+      "description": "Each collateral branch uses a price feed contract implementing `fetchPrice`, abstracting oracle details behind one interface.",
+      "title": "",
+      "id": "63032"
+    },
+    {
+      "type": "highlight",
+      "description": "Primary or fallback price.",
+      "file": "contracts/src/PriceFeeds/WETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 19,
+          "end": 26
+        }
+      ],
+      "title": "",
+      "id": "63033"
+    },
+    {
+      "type": "textOnly",
+      "description": "This high-level tour introduced `Asymmetry`’s core contracts, concepts, and flows. Upcoming tours will dive into:  \n* Liquidation and redistribution math  \n* Batch management and interest logic  \n* `HintHelpers` and off-chain interactions  \n* Security checks and invariants  \n* Zapper integrations and multi-step user journeys",
+      "title": "",
+      "id": "63034"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "title": "2.4: AddressesRegistry: Setting Contract Addresses",
+  "id": "9SZHu+owcUz/N++xfHiDmB/GKD2DzxkrnGKes82SV3I=",
+  "originalId": 5014,
+  "position": 5,
+  "type": "text",
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "Now let's examine how the contract addresses are set in the `AddressesRegistry`. This process is designed to be immutable once completed.",
+      "title": "",
+      "id": "60782"
+    },
+    {
+      "type": "highlight",
+      "description": "The **`AddressVars` struct**, defined in the **`IAddressesRegistry.sol`** interface, is used to pass all the contract addresses to the **`setAddresses`** function in a single, organized bundle. This **struct** contains fields for each of the core contracts in the system, from the collateral token to the **`WETH`** interface.",
+      "file": "contracts/src/Interfaces/IAddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 22,
+          "end": 41
+        }
+      ],
+      "title": "",
+      "id": "60783"
+    },
+    {
+      "type": "highlight",
+      "description": "Here is the complete `setAddresses` function - the only way to set the contract addresses. Notice the `onlyOwner` modifier on line `96`, which ensures that only the owner of the contract can call this function. The function takes the `AddressVars` struct as an argument and systematically assigns each address to its corresponding state variable (lines `97-114`). After setting all addresses, it emits events for each one (lines `116-133`), providing a transparent record of the setup process. Finally, on line `135`, the function calls `_renounceOwnership()`, which makes the address registry immutable after its initial setup.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 96,
+          "end": 136
+        }
+      ],
+      "title": "",
+      "id": "60784"
+    },
+    {
+      "type": "textOnly",
+      "description": "The `_renounceOwnership()` call is significant because it means this function can only be called once. After the addresses are set, not even the original owner can change them again. This provides strong security guarantees - once the system is deployed and configured, the core contract addresses cannot be altered by anyone.",
+      "title": "",
+      "id": "60785"
+    },
+    {
+      "type": "mcq",
+      "description": "Based on the implementation of `setAddresses`, what is the intended lifecycle for managing the contract addresses in the registry?\n\nOptions:\n\n A). The owner can update the addresses at any time by calling `setAddresses` with a new `AddressVars` struct.\n\nB). The addresses are set once by the owner, after which ownership is renounced, making them permanently immutable.\n\nC). The addresses can be changed through a separate governance contract that has special privileges.\n\nD). Only critical addresses like `troveManager` are immutable; others like `hintHelpers` can be updated by the owner.\n\n\nCorrect: B). The addresses are set once by the owner, after which ownership is renounced, making them permanently immutable.\n\nExplanation: The correct answer is that the addresses are permanently immutable after the first call. The `_renounceOwnership()` function is called at the end of `setAddresses`. This action relinquishes ownership from the deployer's address, meaning the `onlyOwner` modifier will prevent anyone, including the original owner, from calling this function ever again. The other options describe patterns that are not implemented in this contract.",
+      "title": "",
+      "id": "60854",
+      "text": "Based on the implementation of `setAddresses`, what is the intended lifecycle for managing the contract addresses in the registry?",
+      "answers": [
+        "The owner can update the addresses at any time by calling `setAddresses` with a new `AddressVars` struct.",
+        "The addresses are set once by the owner, after which ownership is renounced, making them permanently immutable.",
+        "The addresses can be changed through a separate governance contract that has special privileges.",
+        "Only critical addresses like `troveManager` are immutable; others like `hintHelpers` can be updated by the owner."
+      ],
+      "correct": 1,
+      "explanation": "The correct answer is that the addresses are permanently immutable after the first call. The `_renounceOwnership()` function is called at the end of `setAddresses`. This action relinquishes ownership from the deployer's address, meaning the `onlyOwner` modifier will prevent anyone, including the original owner, from calling this function ever again. The other options describe patterns that are not implemented in this contract."
+    }
+  ]
+}

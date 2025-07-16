@@ -1,0 +1,333 @@
+[
+  {
+    "terms": [
+      "Liquidity Provider"
+    ],
+    "definition": "# Liquidity Provider\n\nA participant who deposits assets into decentralized exchange liquidity pools, providing tradable assets and earning a share of trading fees. In the Liquity V2 protocol, liquidity providers serve several key roles:\n\n1. **DEX Liquidity Providers**: Supply token pairs (like BOLD/USDC, WETH/wstETH) to external DEX pools (Uniswap V3, Curve), facilitating trading and price stability. These providers earn trading fees and may receive protocol incentives directed by governance.\n\n2. **Stability Pool Depositors**: Users who deposit BOLD into a branch's Stability Pool, enabling efficient liquidations of under-collateralized Troves. These depositors earn:\n   - Collateral gains from liquidated Troves\n   - BOLD yield from interest paid by borrowers\n   - Proportional rewards based on their deposit size\n\n3. **Flash Loan Liquidity**: Some liquidity providers supply assets to pools enabling flash loans, which power features like leverage and gas compensation Zappers.\n\nLiquidity providers receive tokens representing their contribution (like LP tokens), which can be redeemed to reclaim their share of the pool plus accrued fees. They play a crucial role in maintaining pool liquidity and price stability, but may face risks such as impermanent loss during significant price movements."
+  },
+  {
+    "terms": [
+      "Volatility"
+    ],
+    "definition": "# Volatility\n\nVolatility refers to the magnitude and frequency of price fluctuations for collateral assets within the Liquity V2 protocol. High volatility presents significant risks to the system by potentially triggering liquidations when collateralization ratios fall below minimum thresholds. The protocol implements several mechanisms to handle volatility, including branch-specific Stability Pools that absorb liquidated debt, redemption routing that prioritizes less-collateralized positions, and oracle price verification with staleness checks.\n\nIn volatile market conditions, Liquity V2 employs a cascading risk management approach: first attempting to offset liquidations against Stability Pools, then redistributing any remaining debt to other Troves if needed, and ultimately triggering branch shutdowns in extreme cases where a collateral's price collapses or oracles fail. Volatility also impacts price feed reliability, where oracles may lag behind actual market prices, creating potential arbitrage opportunities or triggering premature liquidations.\n\nThe protocol balances responsiveness to market conditions with stability mechanisms like minimum redemption fees and cooldown periods for interest rate adjustments, all designed to maintain system solvency even during severe market turbulence."
+  },
+  {
+    "terms": [
+      "Arbitrage"
+    ],
+    "definition": "# Arbitrage\n\nIn Liquity V2, arbitrage is the profit-seeking activity where traders exploit price differences between the BOLD stablecoin's market price and its protocol-enforced value of $1. When BOLD trades below $1 on external markets, arbitrageurs can purchase it at a discount, then redeem it through the protocol for $1 worth of collateral (minus fees) using the `redeemCollateral` function. This mechanism serves as a fundamental price stabilization tool that:\n\n1. Reduces the circulating supply of BOLD when it's undervalued\n2. Creates buying pressure on external markets\n3. Returns the BOLD price to its $1 peg\n\nThe system is specifically designed to make this arbitrage profitable and accessible, with redemptions routed across different collateral branches in proportion to their \"unbacked\" debt. Redemption fees dynamically adjust to prevent excessive arbitrage while still incentivizing timely peg restoration. Through this intentional design, arbitrage acts as the primary market-driven mechanism for maintaining BOLD's stability without requiring centralized intervention."
+  },
+  {
+    "terms": [
+      "Slippage"
+    ],
+    "definition": "# Slippage\n\nSlippage in decentralized finance applications refers to the difference between the expected output of a token swap and the actual result received after the transaction is processed. In Liquity's leverage functionality specifically, slippage measures the deviation between the theoretical amount of collateral a user should receive when leveraging their position and the actual amount delivered after accounting for market impact.\n\nThe protocol calculates slippage when users create leveraged positions by simulating the exchange of BOLD tokens for collateral tokens. This calculation helps protect users from unexpected losses due to market volatility or large trade impacts. If the calculated slippage exceeds the predefined maximum threshold (e.g., `LEVERAGE_MAX_SLIPPAGE`), the UI prevents the transaction from proceeding.\n\nSlippage protection serves as a critical risk management tool that ensures users receive a predictable outcome when using leverage features, especially important in volatile crypto markets where prices can change rapidly between transaction submission and execution."
+  },
+  {
+    "terms": [
+      "Spread"
+    ],
+    "definition": "# Spread\n\nIn financial protocols like decentralized exchanges, \"spread\" refers to the distribution of large trading orders over time to minimize market impact. However, this concept is **not explicitly implemented in Liquity V2**. Instead, Liquity V2 handles large redemptions through proportional distribution across collateral branches based on their \"outside debt\" ratios.\n\nWhen a user redeems BOLD tokens, the redemption is routed by the CollateralRegistry contract across different collateral branches, with each branch receiving a portion of the redemption proportional to its unbacked debt (debt not covered by the Stability Pool). This mechanism ensures path-independence and system stability without using time-based order spreading.\n\nUnlike TWAMM (Time-Weighted Average Market Makers) systems that gradually execute large orders over time, Liquity V2's redemption routing happens atomically in a single transaction, focusing on distributing the impact across multiple collateral types rather than spreading execution over time."
+  },
+  {
+    "terms": [
+      "Order Book"
+    ],
+    "definition": "# Order Book\n\nIn the context of decentralized exchanges, an Order Book is a hybrid trading mechanism that combines traditional Automated Market Maker (AMM) functionality with Central Limit Order Book (CLOB) features. Unlike conventional order books on centralized exchanges, this implementation maintains a sorted, on-chain list of positions (Troves) ordered by user-defined interest rates rather than price.\n\nKey features include:\n- **Sorted positions**: Troves are maintained in a doubly-linked list sorted by annual interest rates, determining redemption priority\n- **Deterministic execution**: When users redeem stablecoins for collateral, the system follows this sorted order, redeeming from lower-interest Troves first\n- **On-chain transparency**: All ordering and execution happens transparently on-chain\n- **Extensibility**: The architecture supports hooks and external contracts for advanced trading strategies\n\nThis mechanism enables limit order-like functionality, dynamic fee structures, and MEV protection while maintaining the system's decentralized nature. Rather than matching buy/sell orders directly, it creates an ordered system for redemptions and liquidations that functions conceptually similar to an order book but specialized for collateralized debt positions."
+  },
+  {
+    "terms": [
+      "Market Depth"
+    ],
+    "definition": "# Market Depth\n\nMarket Depth in decentralized exchanges refers to the total amount of liquidity available around the current market price within a liquidity pool. It represents the capacity of the pool to absorb buy or sell orders without causing significant price slippage. Higher market depth indicates more robust liquidity, allowing for larger trades with minimal price impact.\n\nIn Liquity v2 specifically, market depth is determined by:\n\n1. The total collateral (WETH, rETH, wstETH) available in active Troves\n2. How this collateral is distributed across different interest rate levels\n3. The health of Troves (collateralization ratios)\n4. The amount of BOLD in Stability Pools that can absorb liquidations\n\nThis concept is crucial for redemptions, where BOLD is exchanged for collateral in order of Troves' interest rates. Greater market depth ensures that large redemptions can occur without excessive fees or slippage, helping maintain the BOLD peg and overall system stability."
+  },
+  {
+    "terms": [
+      "Limit Order"
+    ],
+    "definition": "# Limit Order\n\nIn decentralized exchanges like Liquity V2, a **Limit Order** is implemented as a special type of liquidity position called a **Range Order**, which allows users to provide single-sided liquidity within a specific price range. This creates a conditional swap that executes automatically when market prices move through the specified range.\n\nUnlike traditional limit orders on centralized exchanges, Range Orders work by:\n\n1. Setting a target price range (defined by ticks in the protocol)\n2. Providing liquidity on only one side of the range (either token A or token B)\n3. When the market price crosses into the specified range, the position automatically converts from the provided token to the other token\n4. If applicable, the position can earn trading fees while waiting for execution\n\nThis mechanism effectively simulates a limit order while maintaining the composability and on-chain nature of AMM-based exchanges. Once the price crosses the specified range, the user's single token deposit is converted to the other token, completing the \"order.\"\n\nFor example, in Liquity's context, a user might create a Range Order to convert their BOLD tokens to collateral (like ETH) when the price reaches a specific threshold, or vice versa."
+  },
+  {
+    "terms": [
+      "Stop-Loss Order"
+    ],
+    "definition": "# Stop-Loss Order\n\nA Stop-Loss Order in decentralized finance protocols like Liquity v2 is an automated risk management mechanism that allows users to set a predetermined price threshold at which their position will be automatically closed or adjusted to limit potential losses. When the asset's price reaches this threshold, the smart contract executes the predefined action—typically selling the collateral asset or closing a leveraged position. \n\nIn Liquity's context, this mechanism is particularly valuable for borrowers who want to protect their collateralized positions from liquidation. The system can monitor price feeds from oracles and automatically trigger the stop-loss when conditions are met, allowing users to exit positions before they reach the liquidation price (as shown in the frontend code's `getLiquidationPrice()` function). This feature provides crucial protection during volatile market conditions without requiring constant manual monitoring.\n\nUnlike centralized exchanges, these orders execute entirely on-chain, ensuring transparency and removing counterparty risk, though they're subject to gas costs and potential slippage during execution."
+  },
+  {
+    "terms": [
+      "Maker Fee"
+    ],
+    "definition": "# Maker Fee\n\nIn Liquity V2, there is no traditional \"maker fee\" as found in order book exchanges. Instead, Liquity V2 introduces a system where borrowers actively set their own interest rates when creating or adjusting Troves (collateralized debt positions). \n\nBorrowers effectively become \"rate makers\" in the protocol by selecting their annual interest rate from a permitted range. The interest rate chosen affects:\n\n1. The order of redemptions (lower rate Troves are redeemed first)\n2. The interest accrued on the borrower's debt over time\n3. The upfront fee charged when borrowing\n\nThis interest paid by borrowers is then distributed to Stability Pool depositors and liquidity providers, rather than being a traditional maker fee paid to the protocol. The system uses various fees like upfront borrowing fees and premature adjustment fees to ensure stability, but these are not classified as \"maker fees\" in the traditional sense."
+  },
+  {
+    "terms": [
+      "Taker Fee"
+    ],
+    "definition": "# Taker Fee\n\nA taker fee is not a feature in the Liquity V2 protocol. Unlike traditional DEXs where taker fees are charged to users who remove liquidity through trades, Liquity V2 implements different fee mechanisms: redemption fees (charged when users redeem BOLD for collateral, with a dynamic rate that increases with redemption volume) and upfront borrowing fees (equal to 7 days of average interest, charged when opening or increasing debt). These fees serve specific protocol functions related to peg stability and discouraging redemption evasion, rather than functioning as traditional market-making fees that reward liquidity providers."
+  },
+  {
+    "terms": [
+      "Margin Trading"
+    ],
+    "definition": "# Margin Trading\n\nIn Liquity V2, margin trading refers to the automated leverage mechanism that allows users to increase their exposure to collateral price movements through recursive borrowing. Users can deposit collateral (like ETH or LSTs), borrow BOLD against it, then use that BOLD to acquire more of the same collateral, and repeat this process multiple times.\n\nThis leveraged position is tracked through a \"leverageFactor\" that shows how many times the user has amplified their initial deposit. The protocol calculates liquidation prices based on this leverage and automates the entire process in a user-friendly way through the frontend.\n\nUnlike traditional margin trading, Liquity's approach doesn't involve borrowing from other users but instead uses the protocol's minting capability. Liquidations occur when the position's collateral ratio falls below the minimum required (MCR), similar to a margin call in traditional trading.\n\nThe system provides visualization tools like `getLiquidationPriceFromLeverage()` to help users understand the risks of their leveraged positions before committing to them."
+  },
+  {
+    "terms": [
+      "Leverage"
+    ],
+    "definition": "# Leverage\n\nIn Liquity V2, \"leverage\" refers to a financial mechanism that allows users to multiply their exposure to price movements of collateral assets. Users can deposit collateral, borrow against it, and then use the borrowed BOLD stablecoin to purchase additional collateral of the same type—effectively creating a position larger than their initial deposit.\n\nThe protocol implements this through a dedicated \"multiply\" interface where users select their initial deposit, desired leverage factor (e.g., 2x, 3x), and interest rate preferences. The system then calculates the resulting position size, debt amount, liquidation risk, and other critical parameters. \n\nLeverage is fundamentally constrained by the protocol's minimum collateral ratio (typically 110%), which defines how much debt a user can take relative to their collateral. Higher leverage increases potential returns but also increases liquidation risk if the collateral price drops.\n\nKey components in the implementation include:\n- `LeverageField` component for user interaction\n- `useLeverageField` hook for calculations \n- Slippage protection to prevent excessive losses during position creation\n- Risk visualization tools showing liquidation thresholds\n\nThis feature differs from the general software engineering definition of leverage (extensibility through modularity) and specifically refers to the financial concept of amplifying market exposure through borrowed capital."
+  },
+  {
+    "terms": [
+      "Hedging"
+    ],
+    "definition": "# Hedging\n\nIn Liquity v2, hedging refers to risk management strategies employed by participants to protect against adverse market conditions when providing liquidity or maintaining debt positions. It involves strategically adjusting collateral ratios, interest rates, and utilizing system features to maintain financial stability despite price volatility. \n\nKey hedging mechanisms include:\n\n- **Position adjustment**: Using `adjustTrove` functions to modify collateral and debt ratios in response to changing market conditions\n- **Batch management**: Delegating interest rate management to specialized managers who can efficiently adjust rates for multiple positions\n- **Stability Pool participation**: Depositing BOLD into Stability Pools to earn collateral gains from liquidations while providing system-wide risk absorption\n- **Strategic redemptions**: Using the redemption mechanism to exit positions when market conditions warrant\n- **Leveraging oracle protections**: Benefiting from the system's price calculation methods that protect against short-term price manipulation\n\nThese mechanisms allow borrowers, liquidity providers, and stability depositors to maintain balanced exposure to collateral assets while optimizing returns from interest and liquidation gains, effectively serving as hedges against impermanent loss and market volatility."
+  },
+  {
+    "terms": [
+      "Swap"
+    ],
+    "definition": "# Swap\n\nA swap is a core operation in decentralized exchanges that exchanges one token for another within a liquidity pool. In this codebase, swap functions like `swapFromBold` and `swapToBold` facilitate these exchanges by transferring tokens between users and liquidity pools.\n\nWhen executing a swap, the function typically:\n1. Accepts parameters like token amounts and slippage limits\n2. Transfers tokens from the sender to the contract\n3. Approves the DEX router (Uniswap or Curve) to use these tokens\n4. Constructs the swap parameters including recipient address, deadline, and minimum output\n5. Executes the swap via the router\n6. Returns any leftover tokens to the user\n\nThe code implements various swap types including direct Uniswap V3 swaps, Curve exchanges, and hybrid swaps that route through multiple protocols for optimal execution. All swap implementations include slippage protection via minimum output parameters to protect users from adverse price movements during transaction confirmation.\n\nUnlike order book exchanges, these swaps execute against pooled liquidity using deterministic pricing formulas based on the reserves in the pool at execution time."
+  },
+  {
+    "terms": [
+      "Futures"
+    ],
+    "definition": "# Futures\n\nIn the Liquity V2 protocol, \"Futures\" does not refer to traditional financial derivatives contracts. The codebase does not implement futures trading functionality where users can agree to buy or sell assets at predetermined prices on specified future dates.\n\nInstead, the term appears only as variable names (like `futureBlockTimestamp`) in the code to represent values that will be known at a later point in time - a standard programming concept unrelated to financial futures contracts.\n\nLiquity V2 focuses on spot-based operations: overcollateralized borrowing through Troves, liquidations, redemptions, and stability mechanisms. The protocol allows users to deposit collateral and borrow against it immediately, but does not provide functionality for forward-dated settlement or leveraged derivatives trading."
+  },
+  {
+    "terms": [
+      "Options"
+    ],
+    "definition": "# Options\n\nIn software development and specifically in this codebase, \"Options\" refers to configuration objects or parameters that allow customization of program behavior. These options appear in several contexts:\n\n1. **Command-Line Interface (CLI) Configuration** - Objects containing parsed command-line arguments that control deployment scripts and utilities:\n   ```typescript\n   const options = {\n     debug: argv[\"debug\"],\n     help: argv[\"help\"],\n     create: argv[\"create\"],\n     // Additional parameters\n   };\n   ```\n\n2. **Component Configuration** - Predefined lists of selectable values for UI components:\n   ```typescript\n   const options = [\n     \"BOLD\" as const,\n     \"ETH\" as const,\n     \"RETH\" as const,\n     \"WSTETH\" as const,\n   ];\n   ```\n\n3. **Runtime Settings** - Parameters passed to functions that determine their execution behavior, with properties like `chainId`, `verify`, `deployer`, etc.\n\nThese option objects enhance flexibility and maintainability by centralizing configurable behavior in a structured way, allowing scripts and components to adapt to different environments or user preferences without code changes."
+  },
+  {
+    "terms": [
+      "Derivatives"
+    ],
+    "definition": "# Derivatives\n\nIn the context of decentralized finance (DeFi) and Liquity V2, derivatives refer to financial instruments whose value is derived from the performance of underlying assets, indices, or protocols. While not explicitly implemented as standalone products in the core protocol, Liquity V2 provides the foundational mechanisms—collateralized debt positions (\"Troves\"), stablecoin minting, liquidations, and user-set interest rates—that can serve as building blocks for derivative-like financial strategies.\n\nThe system's components, particularly its customizable interest rates and multicollateral architecture, enable sophisticated financial behaviors reminiscent of traditional derivatives. For example, borrowers selecting interest rates can be viewed as taking positions on future interest environments, similar to primitive interest rate swaps. The protocol's liquidation and redemption mechanisms create price discovery channels that could underpin more complex derivative instruments built by third parties.\n\nRather than offering explicit options or futures contracts, Liquity V2 provides the infrastructure upon which developers can create more advanced derivative products, leveraged positions, or structured financial strategies using the protocol's core mechanics and price oracles as their foundation."
+  },
+  {
+    "terms": [
+      "Stablecoin"
+    ],
+    "definition": "# Stablecoin\n\nA cryptocurrency designed to maintain a stable value relative to a specific asset or basket of assets, typically pegged to a fiat currency like the US dollar. In the context of decentralized exchanges, stablecoins play a crucial role in providing liquidity and facilitating trades with reduced price volatility. They can be swapped, added to liquidity pools, or used as a stable store of value within the decentralized finance (DeFi) ecosystem.\n\nIn Liquity v2, the native stablecoin BOLD is designed to maintain a $1 value through algorithmic mechanisms rather than being backed by off-chain reserves. Users can mint BOLD by depositing collateral like ETH or liquid staking tokens (LSTs) into a Trove, borrow against it, and redeem it directly with the system for $1 worth of collateral (minus fees). The stability is maintained through over-collateralization, redemptions, and liquidations, with the Stability Pool acting as a safety mechanism that absorbs debt from liquidated Troves.\n\nStablecoins interact with smart contracts through functions like `provideToSP`, `withdrawFromSP`, and `redeemCollateral`, which involve transferring, minting, or burning the token during protocol operations."
+  },
+  {
+    "terms": [
+      "Collateral"
+    ],
+    "definition": "# Collateral\n\nCollateral in Liquity v2 refers to the assets (like WETH, wstETH, or rETH) that users deposit to secure their borrowing positions (Troves). Each collateral type exists within its own isolated \"branch\" with dedicated smart contracts that handle operations specific to that asset.\n\nWhen a user opens a Trove, they deposit collateral which must maintain a minimum collateral ratio (MCR) relative to their borrowed BOLD stablecoin amount. If this ratio falls below the MCR, the position becomes eligible for liquidation, where the collateral is seized and distributed to Stability Pool depositors or other Troves.\n\nThe multi-collateral architecture isolates risk by asset type, preventing issues with one collateral from directly affecting positions using other collaterals. This compartmentalization extends to redemptions, where BOLD holders can exchange their tokens for collateral at face value (minus fees), following a routing mechanism that distributes redemptions across branches proportionally.\n\nEach collateral type has branch-specific parameters including minimum collateral ratio (MCR), critical collateral ratio (CCR), and shutdown collateral ratio (SCR), which govern the operation and risk management of positions using that asset."
+  },
+  {
+    "terms": [
+      "Yield Farming"
+    ],
+    "definition": "# Yield Farming\n\nIn Liquity V2, yield farming refers to the process where users deposit BOLD tokens (the protocol's stablecoin) into Stability Pools to earn rewards. Unlike traditional yield farming that relies on token emissions, Liquity's yield farming provides two sustainable revenue streams:\n\n1. **BOLD Yield** - Interest paid by borrowers is periodically minted as fresh BOLD and distributed to Stability Pool depositors proportionally to their deposit size.\n\n2. **Collateral Gains** - When undercollateralized Troves (loans) are liquidated, a portion of their seized collateral is distributed to Stability Pool depositors who helped absorb the debt.\n\nUsers can manage these rewards through the `provideToSP` and `withdrawFromSP` functions, with options to either claim rewards directly or compound them back into their position. The protocol also routes a portion of interest yields to DEX liquidity providers, enabling more complex yield farming strategies.\n\nThis mechanism serves the dual purpose of incentivizing protocol participation while providing the stability mechanism necessary for liquidations, making it a core part of Liquity's economic design rather than merely an incentive program."
+  },
+  {
+    "terms": [
+      "Staking"
+    ],
+    "definition": "# Staking\n\nIn Liquity V2, staking refers to the process where users lock their LQTY tokens in the protocol's dedicated staking contract to earn protocol-generated rewards and gain governance rights. When users stake their LQTY tokens, they receive proportional rewards in both ETH and LUSD that accumulate based on system activity and fee collection. The staking mechanism tracks each user's deposit amount, total staked tokens across the system, and accrued rewards through snapshots that update when system fees are collected.\n\nStaking serves multiple purposes in the ecosystem:\n1. **Reward Distribution**: Stakers earn a share of protocol fees and revenue in ETH and LUSD proportional to their stake\n2. **Governance Participation**: Staked LQTY provides voting power for protocol decisions, particularly around revenue allocation\n3. **Protocol Alignment**: The staking mechanism aligns token holders' interests with the protocol's long-term success\n\nUnlike liquidity provision in DEXs, Liquity's staking is directly tied to protocol ownership and governance rather than market-making activities. Users can stake and unstake their LQTY tokens at will, with their rewards automatically calculated based on global indices that track the distribution of benefits across all stakers."
+  },
+  {
+    "terms": [
+      "APR (Annual Percentage Rate)",
+      "APR",
+      "Annual Percentage Rate"
+    ],
+    "definition": "# APR (Annual Percentage Rate)\n\nIn the context of decentralized finance (DeFi) platforms like Liquity V2, APR refers to the annualized rate that expresses either the cost of borrowing or the yield from providing liquidity, expressed as a percentage.\n\nFor borrowers, APR represents the annual interest rate they choose when opening a Trove (debt position). This rate determines:\n1. The interest cost accrued on their debt over time\n2. Their position in the redemption queue (lower APR Troves are redeemed first)\n3. The upfront borrowing fees they'll pay\n\nFor liquidity providers in Stability Pools, APR represents the expected annualized yield they can earn from:\n- Interest payments from borrowers\n- Liquidation gains\n- Protocol fee distributions\n\nUnlike compound interest (APY), APR in Liquity V2 is calculated as simple, non-compounding interest that accrues continuously but is only applied to a Trove's debt when the position is modified.\n\nThe system tracks both individual APRs for each Trove and debt-weighted average APRs for each collateral branch to facilitate various protocol mechanisms like fee calculations and interest distribution."
+  },
+  {
+    "terms": [
+      "APY (Annual Percentage Yield)",
+      "APY",
+      "Annual Percentage Yield"
+    ],
+    "definition": "# APY (Annual Percentage Yield)\n\nAPY represents the annualized rate of return for liquidity providers in Liquity V2's Stability Pools. It calculates the effective yearly earnings depositors receive from two primary sources: interest paid by borrowers and collateral gains from liquidations.\n\nWhen borrowers pay interest on their loans, a significant portion (72%) is minted as BOLD tokens and distributed to Stability Pool depositors proportionally to their deposit size. Additionally, when undercollateralized positions are liquidated, Stability Pool depositors receive a share of the seized collateral as rewards.\n\nAPY varies across different collateral branches (ETH, RETH, WSTETH) and fluctuates based on factors including:\n- Total trading volume in the pool\n- Size of deposits in the Stability Pool\n- Interest rates set by borrowers\n- Frequency and size of liquidation events\n\nUnlike APR (Annual Percentage Rate) which is a simple non-compounded rate, APY accounts for the compounding effect if depositors reinvest their rewards. The frontend displays APY estimates based on recent yield data (1-day and 7-day averages) to help users compare potential returns across different Stability Pools."
+  },
+  {
+    "terms": [
+      "Gas Fee"
+    ],
+    "definition": "# Gas Fee\n\nA gas fee is the transaction cost paid to Ethereum validators for executing operations on the blockchain. In the Liquity protocol, users pay gas fees (in ETH or WETH) whenever they interact with the smart contracts - such as opening Troves, making Stability Pool deposits, or performing redemptions.\n\nThese fees are separate from protocol-specific fees like borrowing or redemption fees. The protocol includes mechanisms to compensate certain operations (like liquidations) for their gas costs to ensure these essential functions remain economically viable even during periods of high network congestion.\n\nFor example, when a Trove is opened, a small WETH amount (0.0375 WETH) is set aside as gas compensation for potential future liquidators. The frontend application typically shows gas fee estimates to users before they confirm transactions."
+  },
+  {
+    "terms": [
+      "Smart Contract"
+    ],
+    "definition": "# Smart Contract\n\nA smart contract in Liquity V2 is a self-executing program deployed on the Ethereum blockchain that contains the protocol's business logic and rules. These contracts—such as `TroveManager`, `BorrowerOperations`, and `StabilityPool`—autonomously manage the entire lifecycle of collateralized debt positions, from creation through interest accrual to liquidation or redemption.\n\nThe smart contracts in this system form a multicollateral architecture where separate contract branches handle different collateral types (WETH, rETH, wstETH), with cross-branch coordination for operations like redemptions. They implement complex mechanisms including interest rate management, liquidation logic, stability pools, price feeds, and redemption routing.\n\nOnce deployed, these contracts operate without human intervention, enforcing protocol rules deterministically and transparently, securing billions in value through immutable code rather than trusted intermediaries. All user interactions with the protocol—borrowing, adjusting positions, providing stability, or redeeming stablecoins—are processed exclusively through these on-chain programs, ensuring the system functions exactly as its code specifies."
+  },
+  {
+    "terms": [
+      "DeFi"
+    ],
+    "definition": "# DeFi\n\nDecentralized Finance (DeFi) refers to a blockchain-based financial ecosystem that aims to recreate and improve upon traditional financial services without relying on centralized intermediaries. DeFi encompasses automated market makers (AMMs), liquidity pools, and smart contracts that enable permissionless trading, lending, and yield generation. Key features include:\n1. Non-custodial protocols where users retain control of their assets\n2. Open-source smart contracts that execute financial operations transparently\n3. Composability, allowing different DeFi protocols to interact seamlessly\n4. Accessibility to anyone with an internet connection and a compatible wallet\nDeFi platforms leverage blockchain technology to create more efficient, transparent, and inclusive financial systems, challenging traditional finance by offering innovative solutions for trading, lending, and asset management."
+  },
+  {
+    "terms": [
+      "CeFi"
+    ],
+    "definition": "# CeFi\n\nCentralized Finance (CeFi) refers to traditional financial systems and services managed by centralized authorities or intermediaries. In contrast to Liquity V2's decentralized protocol design, CeFi platforms typically require users to trust a central entity with custody of funds, setting of interest rates, and management of risk. The Liquity V2 protocol is specifically designed as an alternative to CeFi models by implementing features like user-set interest rates, non-custodial collateralized positions, and algorithmic liquidations - all without requiring trust in central operators. Understanding CeFi provides context for appreciating the decentralized, governance-minimized approach that Liquity V2 embodies."
+  },
+  {
+    "terms": [
+      "DAO"
+    ],
+    "definition": "# DAO\n\nUnlike many DeFi protocols that rely on Decentralized Autonomous Organizations (DAOs) for governance, Liquity V2 is deliberately designed without DAO governance. The protocol is fully immutable once deployed, with no ability for token holders to vote on or change protocol parameters. \n\nInstead of centralized or DAO-based decision-making, Liquity V2 empowers individual users to set their own interest rates when borrowing, creating a truly market-driven system. Protocol revenue (from interest payments) is programmatically distributed with 75% going to Stability Pools and 25% to protocol-incentivized liquidity—without any DAO mechanism controlling this allocation.\n\nThis absence of DAO governance is a core philosophical and technical choice, intended to maximize predictability, minimize governance risks, and create a more resilient and censorship-resistant financial protocol."
+  },
+  {
+    "terms": [
+      "Liquidity Mining"
+    ],
+    "definition": "# Liquidity Mining\n\nLiquidity mining in Liquity v2 refers to the mechanism where a portion of protocol revenue is distributed to incentivize liquidity providers in external DEX pools. When borrowers pay interest on their Trove debt, 25% of that BOLD yield is routed to a dedicated \"interest router\" that rewards users who provide trading liquidity for BOLD token pairs on decentralized exchanges.\n\nUnlike traditional liquidity mining that often uses inflationary token emissions, Liquity's approach is sustainable as it's funded directly from actual protocol revenue. This creates a self-reinforcing system where borrowing activity automatically generates rewards for liquidity providers, which in turn creates deeper markets and more efficient trading for the BOLD stablecoin.\n\nThe system implements this through a split yield mechanism: whenever interest accrues and BOLD is minted, 75% goes to Stability Pool depositors and 25% to external liquidity providers. This distribution ensures that as long as the protocol has active borrowers, there will always be ongoing incentives for maintaining BOLD liquidity across the DeFi ecosystem."
+  },
+  {
+    "terms": [
+      "Protocol Fee"
+    ],
+    "definition": "# Protocol Fee\n\nIn Liquity V2, a protocol fee refers to a portion of the interest revenue generated from outstanding BOLD debt positions. Unlike direct transaction fees, these are collected as part of the interest accrual process. The protocol distributes this revenue through two primary channels:\n\n1. **Stability Pool Rewards** (initially 75% of revenue) - Distributed to users who deposit BOLD in the Stability Pool, incentivizing them to maintain liquidity for absorbing liquidations and supporting the BOLD peg.\n\n2. **Protocol Incentivized Liquidity (PIL)** (initially 25% of revenue) - Allocated to incentivize liquidity provision on decentralized exchanges, ensuring deeper markets for BOLD.\n\nThis fee structure is distinct from liquidity provider fees and can be managed through protocol governance. The fees are collected in BOLD tokens and are designed to support the protocol's long-term sustainability while aligning incentives across all participants in the ecosystem."
+  },
+  {
+    "terms": [
+      "ERC20"
+    ],
+    "definition": "# ERC20\n\nERC20 is a standard interface for fungible tokens on Ethereum and compatible blockchains. It defines a common set of functions that allow tokens to be transferred, approved for spending by other addresses, and queried for balances. Core functions include `transfer`, `approve`, `transferFrom`, `balanceOf`, `allowance`, and `totalSupply`.\n\nIn the Liquity codebase, ERC20 is implemented by the BOLD stablecoin and is used to interact with collateral tokens like WETH, wstETH, and rETH. The standard ensures all these tokens can be handled in a consistent way, enabling seamless integration with wallets, exchanges, and other DeFi protocols.\n\nThe implementation includes extended functionality like EIP-2612's `permit()` method for gasless approvals. This standardization is crucial for the protocol's redemption mechanics, Stability Pool operations, and collateral management, allowing the system to work with any compliant token without custom integration code."
+  },
+  {
+    "terms": [
+      "ERC1155"
+    ],
+    "definition": "# ERC1155\n\nERC1155 is a token standard on Ethereum that allows a single smart contract to manage multiple token types simultaneously. Unlike ERC20 (fungible tokens) or ERC721 (non-fungible tokens), ERC1155 supports both fungible and non-fungible tokens within the same contract. It enables batch transfers of multiple token types in a single transaction, significantly reducing gas costs compared to separate operations. This standard is particularly useful for applications like gaming platforms, marketplaces, or any system that needs to manage diverse asset types efficiently."
+  },
+  {
+    "terms": [
+      "ERC6909"
+    ],
+    "definition": "# ERC6909\n\nERC6909 is a gas-efficient token standard designed for managing multiple fungible tokens within a single contract. Unlike ERC20 which handles one token type per contract, ERC6909 allows tracking balances by both address and token ID pairs, enabling more efficient multi-token operations. Key features include simplified operator approval systems for batch transfers, minimalist implementation with core functions for transfers and balance tracking, and optimized storage patterns. The standard is particularly useful in DeFi applications where managing multiple token types in one contract reduces deployment costs and improves gas efficiency for users who interact with several token types frequently."
+  },
+  {
+    "terms": [
+      "X96"
+    ],
+    "definition": "# X96\n\nA fixed-point number format (specifically Q64.96) used in DeFi protocols for high-precision mathematical operations. In this format, a value is multiplied by 2^96 and stored as an integer, allowing for precise representation of fractional values without floating-point arithmetic, which isn't available in Solidity. \n\nThe format is particularly important in Uniswap V3-style protocols for representing the square root of price ratios between token pairs, enabling accurate calculations for determining swap amounts, positions, and liquidity ranges. In the codebase, you can see this in functions like `priceToSqrtPriceX96()` and `sqrtPriceX96ToPrice()` which convert between regular price values and this specialized fixed-point representation.\n\nThis approach offers several advantages:\n- Maintains high precision (96 bits for the fractional part)\n- Enables efficient on-chain calculations \n- Avoids rounding errors that would accumulate with less precise representations\n- Has become a standard across DeFi protocols for price-related operations"
+  },
+  {
+    "terms": [
+      "Concentrated Liquidity"
+    ],
+    "definition": "# Concentrated Liquidity\n\nConcentrated liquidity is a capital-efficient liquidity provision mechanism where providers can allocate their assets within specific price ranges rather than across the entire price spectrum. In this system, liquidity providers create positions with defined upper and lower price bounds (represented as \"ticks\"). Their liquidity is only active when the market price falls within their specified range, and they only earn trading fees during this active period.\n\nThis approach significantly enhances capital efficiency by allowing providers to focus their capital where it's most needed - typically around current market prices. The implementation in this codebase leverages Uniswap V3's architecture, where positions are represented as non-fungible tokens (NFTs) and are managed through interfaces like `IUniswapV3Pool` and `INonfungiblePositionManager`.\n\nWhen a price moves outside a position's range, the liquidity automatically becomes 100% composed of the lower-priced asset (when below range) or 100% of the higher-priced asset (when above range). The position remains inactive until the price returns to the specified range. This model creates greater depth at relevant price points while requiring less total capital locked than traditional AMM designs."
+  },
+  {
+    "terms": [
+      "Constant Product Formula"
+    ],
+    "definition": "# Constant Product Formula\n\nThe Constant Product Formula is a core mathematical principle in decentralized finance, expressed as `x * y = k`, where `x` and `y` represent token reserves in a liquidity pool and `k` is a constant value that must remain unchanged after trades. In Liquity's codebase, this formula underpins exchange functionality, particularly in the Uniswap V3 integration modules.\n\nWhen users trade tokens through these integrated AMMs, the product of the reserves must remain constant, which automatically determines prices based on supply and demand. Functions like `priceToSqrtPrice` and `sqrtPriceX96ToPrice` convert between human-readable prices and Uniswap's internal square root price representation, all while maintaining this invariant.\n\nThis formula enables Liquity's zapper modules to accurately calculate token swaps, estimate slippage, and interface with DEX liquidity pools in a permissionless way. By adhering to this mathematical constraint, the system ensures fair pricing when users convert between BOLD stablecoins and various collateral tokens, maintaining market efficiency without requiring centralized order books."
+  },
+  {
+    "terms": [
+      "Invariant"
+    ],
+    "definition": "# Invariant\n\nIn the context of smart contract systems like Liquity V2, an **invariant** is a mathematical property or relationship that is designed to remain constant throughout all protocol state changes and operations. These unchanging properties serve as fundamental guarantees that maintain system integrity and economic soundness.\n\nInvariants act as internal checks and balances that must always hold true, such as the \"core debt invariant\" ensuring that the aggregate debt of a branch always equals the sum of individual Trove debts. They provide critical security assurances by preventing the accidental creation or destruction of value within the system.\n\nIn practice, invariants are enforced through carefully designed smart contract logic and are rigorously verified through specialized testing frameworks that simulate millions of possible transaction sequences to confirm these properties remain unbroken under all circumstances. When an invariant is broken, it typically indicates a serious bug or vulnerability that requires immediate attention.\n\nWell-designed financial protocols define clear invariants and employ extensive testing to ensure they hold under all conditions, as these mathematical constants form the bedrock of trust in decentralized systems."
+  },
+  {
+    "terms": [
+      "Mid Price"
+    ],
+    "definition": "# Mid Price\n\nMid price in decentralized finance systems like Liquity V2 represents the current fair value or market-clearing price of a collateral asset within the protocol. It's typically derived from external price oracles (like Chainlink) rather than being calculated from internal pool reserves.\n\nThis oracle-derived price serves as the system's canonical reference value for all critical protocol calculations, including:\n\n- Determining users' collateralization ratios\n- Calculating liquidation thresholds \n- Establishing redemption values (how much collateral 1 BOLD token is worth)\n- Setting system-wide health metrics like Total Collateralization Ratio (TCR)\n\nUnlike execution prices which can vary with trade size due to slippage, the mid price represents the theoretical price at which an infinitesimally small trade would execute with zero impact. In Liquity V2, this price is returned by the `fetchPrice()` function on each collateral branch's `PriceFeed` contract, with special logic implemented for different collateral types.\n\nThe mid price is critical for maintaining system stability and fairness, as it ensures all participants share the same understanding of asset values regardless of their individual transaction sizes."
+  },
+  {
+    "terms": [
+      "AMM Protocol",
+      "Automated Market Maker",
+      "AMM"
+    ],
+    "definition": "# AMM Protocol\n\nAn Automated Market Maker (AMM) protocol is a decentralized exchange mechanism that uses smart contracts to facilitate token swaps without traditional order books. Instead of matching buyers and sellers, AMMs use mathematical formulas and liquidity pools where users can deposit token pairs, enabling permissionless trading between those assets.\n\nKey characteristics of AMM protocols include:\n\n1. **Liquidity pools**: Pairs of tokens locked in smart contracts that traders can swap between\n2. **Mathematical pricing formulas**: Often using constant product (x*y=k) or similar models\n3. **Permissionless participation**: Anyone can provide liquidity or trade without intermediaries\n4. **Passive market making**: Liquidity providers earn fees without actively managing orders\n5. **Composability**: Can be integrated with other DeFi protocols and applications\n\nPopular AMM protocols include Uniswap, Curve Finance, and Balancer, each with variations in their pricing mechanisms optimized for different trading scenarios. AMMs have become foundational infrastructure in decentralized finance, enabling efficient asset exchange without relying on centralized intermediaries."
+  },
+  {
+    "terms": [
+      "address(0)"
+    ],
+    "definition": "# address(0)\n\nThe zero address (`0x0000000000000000000000000000000000000000`) serves as a special sentinel value in Ethereum and EVM-compatible blockchains. In Liquity V2 and similar smart contract systems, `address(0)` is used to:\n\n1. Indicate an uninitialized or invalid address\n2. Signal the absence of a specific manager or delegate in delegation logic\n3. Function as a burn address for tokens (sending tokens here effectively removes them from circulation)\n4. Serve as a default value in smart contract storage variables\n5. Enable certain permission flows (e.g., when an `addManager` is set to `address(0)`, it may indicate \"anyone can add\")\n\nSmart contracts frequently check for `address(0)` to prevent erroneous operations, such as:\n```solidity\nfunction _requireNonZeroManagerUnlessWiping(address _manager, address _receiver) internal pure {\n    if (_manager == address(0) && _receiver != address(0)) {\n        revert EmptyManager();\n    }\n}\n```\n\nThe zero address is critical for safety checks and permission logic throughout DeFi applications, as no private key is known to exist for this address."
+  },
+  {
+    "terms": [
+      "EIP-1153"
+    ],
+    "definition": "# EIP-1153\n\nEIP-1153 (Transient Storage Opcodes) is an Ethereum Improvement Proposal that introduces new EVM opcodes for temporary data storage. These opcodes—TSTORE and TLOAD—enable smart contracts to efficiently store and retrieve data that exists only for the duration of a transaction execution.\n\nIn the context of complex DeFi protocols like Liquity v2, transient storage provides significant gas optimization for operations that require temporary state tracking across contract calls. Unlike traditional storage (SSTORE/SLOAD), data in transient storage doesn't persist on the blockchain after transaction completion, meaning:\n\n1. Lower gas costs for temporary values that don't need permanence\n2. Reduced storage bloat in the state trie\n3. Automatic cleanup when the transaction ends\n4. Simpler implementation of patterns like reentrancy guards or complex multi-step operations\n\nThis makes EIP-1153 particularly valuable for gas-intensive operations found in lending protocols, such as liquidations, redemptions, or complex collateral management that involve multiple contract interactions within a single transaction."
+  },
+  {
+    "terms": [
+      "DEX"
+    ],
+    "definition": "# DEX\n\nA Decentralized Exchange (DEX) is a peer-to-peer marketplace for trading cryptocurrencies without intermediaries. It refers to protocols that enable trustless, permissionless token swaps and liquidity provision through smart contracts. Unlike centralized exchanges, DEXs allow users to maintain control of their assets, trade directly from their wallets, and interact with on-chain liquidity pools.\n\nKey features of DEXs often include:\n1. Automated market-making (AMM) using liquidity pools\n2. Direct token swaps without order books\n3. Ability for users to provide liquidity and earn fees\n4. Smart contract-based trades without custodial requirements\n\nIn the Liquity v2 system, DEXs are not core components but rather external protocols that the system interacts with - primarily for routing yield incentives to liquidity providers and enabling users to trade BOLD stablecoins."
+  },
+  {
+    "terms": [
+      "ERC721"
+    ],
+    "definition": "# ERC721\n\nERC721 is a standard for non-fungible tokens (NFTs) on the Ethereum blockchain that defines how unique digital assets are created, owned, and transferred. In the Liquity v2 system, Troves (collateralized debt positions) are represented as ERC721 tokens through the `TroveNFT` contract, which implements functions like `mint`, `burn`, `tokenURI`, and standard transfer operations. Each Trove is minted as a unique NFT to the borrower's address with a specific `tokenId`, allowing Troves to be freely transferred between users while maintaining their unique properties (collateral amount, debt, interest rate). The NFT's metadata includes detailed information about the Trove's state, enhancing interoperability with wallet applications and NFT marketplaces. This approach makes Trove ownership clearly defined, easily transferable, and enables the possibility of secondary markets for debt positions."
+  },
+  {
+    "terms": [
+      "EIP-712"
+    ],
+    "definition": "# EIP-712\n\nEIP-712 is a standard for securely signing and verifying typed structured data in Ethereum applications. Unlike basic transaction signing, EIP-712 enables signing of structured objects with named fields, making the signing request human-readable and improving security.\n\nIn the Liquity v2 codebase, EIP-712 is implemented primarily for the permit functionality (ERC-2612) as seen in the frontend's `permit.ts` module. This implementation allows users to approve token spending without submitting a separate transaction by:\n\n1. Creating a domain separator that uniquely identifies the contract\n2. Structuring the permit data with clearly named fields (owner, spender, value, etc.)\n3. Signing this typed data with the user's private key\n4. Extracting the signature components (v, r, s) to be submitted on-chain\n\nThe implementation follows the standard pattern:\n```typescript\nsignTypedData({\n  domain: { name, version, chainId, verifyingContract },\n  types: { Permit: [/* field definitions */] },\n  primaryType: \"Permit\",\n  message: { owner, spender, value, nonce, deadline }\n})\n```\n\nThis approach significantly improves user experience by making token approvals gasless while ensuring users can clearly see what they're signing, reducing phishing risks and providing a more secure interaction model."
+  },
+  {
+    "terms": [
+      "Time-Weighted Average Market Maker (TWAMM)",
+      "TWAMM"
+    ],
+    "definition": "# Time-Weighted Average Market Maker (TWAMM)\n\nA mechanism in decentralized exchanges that executes large orders gradually over time, splitting them across multiple blocks to achieve a time-weighted average price. TWAMMs minimize price impact and slippage by avoiding the market disruption that can occur with large single-block trades. Unlike sudden market executions, TWAMMs allow traders to specify the total size and duration of their order, with the protocol automatically executing small portions periodically until completion. This approach reduces the vulnerability to front-running, sandwich attacks, and excessive price movement, while potentially capturing better overall execution prices in volatile markets. This concept was popularized by Uniswap v4 but can be implemented in various forms across different DeFi protocols."
+  },
+  {
+    "terms": [
+      "Variant Maps"
+    ],
+    "definition": "# Variant Maps\n\nA binary encoding pattern used in the Angstrom protocol to efficiently pack multiple boolean flags into a single byte. Implemented through types like `ToBOrderVariantMap` and `UserOrderVariantMap`, these structures enable gas-efficient storage and processing of order properties such as direction (zeroForOne), internal usage flags, and signature types. Variant maps help optimize gas usage while maintaining clear, type-safe access to order properties."
+  },
+  {
+    "terms": [
+      "ECDSA"
+    ],
+    "definition": "# ECDSA\n\nECDSA (Elliptic Curve Digital Signature Algorithm) is a cryptographic algorithm used to create and verify digital signatures in blockchain applications. It enables secure authentication by allowing one party to sign data and others to verify the signature's authenticity without compromising the signer's private key.\n\nIn this codebase, ECDSA is primarily implemented through OpenZeppelin's utility library and is used for:\n\n1. **Authentication**: Verifying that messages come from claimed senders by recovering the signer's address from signature components\n2. **EIP-2612 Permit Functionality**: Allowing token approvals via signatures instead of transactions\n3. **Signature Processing**: Working with the three key components of Ethereum signatures:\n   - `r` (32 bytes): First half of the signature\n   - `s` (32 bytes): Second half of the signature\n   - `v` (1 byte): Recovery identifier\n\nThe implementation handles different signature formats (standard 65-byte signatures and EIP-2098 short signatures), guards against signature malleability attacks, and includes robust error handling.\n\nWhen a user signs a message with their private key, the resulting signature can be verified on-chain without requiring the private key itself, establishing a secure way to prove ownership of an Ethereum address and authorize operations."
+  },
+  {
+    "terms": [
+      "ERC1271"
+    ],
+    "definition": "# ERC1271\n\nERC1271 is a standard interface that enables smart contracts to validate signatures, extending signature verification capabilities beyond Externally Owned Accounts (EOAs). The standard defines an `isValidSignature` function that takes a message hash and signature bytes as inputs, returning a specific \"magic value\" (`0x1626ba7e`) if the signature is valid according to the contract's custom logic.\n\nThis standard is crucial for smart contract wallets, multi-sig systems, and account abstraction as it allows these contracts to participate in signature-based protocols like:\n\n- Off-chain order signing for decentralized exchanges\n- Meta-transactions (gasless transactions)\n- EIP-2612 permit functions for token approvals\n- Sign-In With Ethereum (SIWE)\n\nBy implementing ERC1271, a smart contract can define its own rules for signature validation, such as requiring multiple signatures, enforcing time locks, or integrating with complex governance systems.\n\n```solidity\ninterface IERC1271 {\n    function isValidSignature(\n        bytes32 hash, \n        bytes memory signature\n    ) external view returns (bytes4 magicValue);\n}\n```\n\nSupporting ERC1271 in protocols ensures broader compatibility with the evolving Ethereum ecosystem, where smart contract wallets are becoming increasingly prevalent."
+  },
+  {
+    "terms": [
+      "Application-Specific Sequencing (ASS)",
+      "Application-Specific Sequencing",
+      "(ASS)"
+    ],
+    "definition": "# Application-Specific Sequencing (ASS)\n\nApplication-Specific Sequencing (ASS) is a blockchain architecture pattern that allows individual applications to define and control the ordering of their own transactions, rather than relying solely on the blockchain's default sequencing mechanisms. In Liquity v2, this manifests through custom transaction ordering rules - for example, redemptions target Troves in ascending order of interest rate rather than by transaction arrival time or collateral ratio.\n\nThis approach provides several key benefits:\n\n1. **MEV Mitigation** - By controlling transaction ordering within the application, ASS reduces opportunities for miners or validators to extract value through techniques like frontrunning or sandwich attacks.\n\n2. **Optimized User Experience** - Applications can implement transaction ordering that makes sense for their specific use case, such as Liquity's interest-rate-based redemption ordering that protects borrowers who pay higher interest.\n\n3. **Fairness Improvements** - Custom sequencing rules can be designed to create more equitable outcomes compared to default blockchain ordering, which often favors sophisticated actors.\n\n4. **Execution Predictability** - Users can better understand and predict how their transactions will be processed based on application-specific rules rather than opaque miner/validator preferences.\n\nASS can be implemented through various mechanisms including smart contract logic (as in Liquity v2's redemption ordering), dedicated sequencer services, or application-specific Layer 2 solutions that handle transaction batching and ordering."
+  },
+  {
+    "terms": [
+      "MEV (Maximal Extractable Value)",
+      "MEV",
+      "Maximal Extractable Value"
+    ],
+    "definition": "# MEV (Maximal Extractable Value)\n\nMEV refers to the maximum profit that can be extracted from blockchain networks by reordering, inserting, or censoring transactions within blocks. This value is typically captured by miners, validators, or specialized bots who can manipulate transaction ordering to their advantage through practices like frontrunning, backrunning, or sandwich attacks.\n\nIn the context of this codebase, MEV mitigation is implemented as a core feature to protect both users and liquidity providers (LPs) from potential exploitation. The system employs two primary mechanisms:\n\n1. **Batch processing of limit orders at uniform prices** - All user orders are cleared in batches at a common price, ensuring fair treatment and preventing targeted extraction through sandwich attacks.\n\n2. **Top of Block (ToB) Auction** - Rather than allowing external arbitrageurs to extract value from the underlying Automated Market Maker (AMM), the protocol internalizes this competition and redistributes the proceeds back to LPs.\n\nThese mechanisms effectively transform what would be extracted value (by external actors) into protected value that remains within the protocol ecosystem, creating a more equitable and efficient decentralized exchange that limits censorship and minimizes value leakage."
+  },
+  {
+    "terms": [
+      "Orderbook"
+    ],
+    "definition": "# OrderBook\n\nAn `OrderBook` is a core data structure in a trading system that maintains sorted lists of buy (bid) and sell (ask) orders for a specific asset or trading pair. It consists of:\n\n1. A unique identifier (`PoolId`)\n2. Two vectors: one for bid orders and one for ask orders\n3. An optional Automated Market Maker (AMM) snapshot\n\nThe `OrderBook` is typically constructed using a `BookBuilder` pattern and employs a `SortStrategy` to keep orders organized, usually by price and then by volume or time. It provides methods to access and search orders, facilitating efficient matching of trades by the matching engine.\n\nKey implementation details can be found in:\n```rust\n// crates/matching-engine/src/book/mod.rs\npub struct OrderBook {\n    id:   PoolId,\n    amm:  Option<MarketSnapshot>,\n    bids: Vec<OrderWithStorageData<GroupedVanillaOrder>>,\n    asks: Vec<OrderWithStorageData<GroupedVanillaOrder>>\n}\n```\n\nThis structure forms the foundation for order management and price discovery in a trading system."
+  },
+  {
+    "terms": [
+      "Top-of-Block (ToB)",
+      "Top-of-Block",
+      "ToB"
+    ],
+    "definition": "# Top-of-Block (ToB)\n\nTop-of-Block (ToB) refers to a specialized order type in blockchain systems designed to be executed at the beginning of a new block, before regular transactions. These orders contain specific parameters including asset quantities, gas limits, and validity constraints tied to block numbers.\n\nToB orders provide traders with execution priority, helping them minimize slippage and protect against front-running or sandwich attacks in time-sensitive trading scenarios. They function by being processed through a dedicated mechanism that validates and executes them as part of the block creation process, ensuring they receive preferential treatment in transaction ordering.\n\nThe structure of ToB orders typically includes:\n- Input and output asset quantities\n- Gas usage limits\n- Asset addresses involved in the swap\n- Block number validity constraints\n- Recipient information for settlement\n\nThis mechanism is particularly valuable in decentralized exchanges and trading platforms where transaction ordering can significantly impact trade outcomes and where capturing market inefficiencies requires precise timing."
+  }
+]

@@ -1,0 +1,192 @@
+{
+  "title": "5.3: WETH Price Feed: Implementation Deep Dive",
+  "id": "UsKqYlDkhGoomYNPPpbeckPotbzeDkW7+me4YfIim1U=",
+  "originalId": 5018,
+  "position": 10,
+  "type": "text",
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "Welcome to this walkthrough of `WETHPriceFeed.sol`. We'll explore how this contract provides ETH-USD pricing for WETH collateral, including its oracle integration and fallback mechanisms.",
+      "title": "",
+      "id": "60822"
+    },
+    {
+      "type": "highlight",
+      "description": "The contract declaration shows `WETHPriceFeed` inheriting from `MainnetPriceFeedBase`. This inheritance provides the `Chainlink` oracle plumbing and fallback logic, allowing `WETHPriceFeed` to focus on WETH-specific pricing while leveraging proven oracle infrastructure.",
+      "file": "contracts/src/PriceFeeds/WETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 9,
+          "end": 12
+        }
+      ],
+      "title": "",
+      "id": "60823"
+    },
+    {
+      "type": "highlight",
+      "description": "The constructor configures the **ETH-USD oracle** by calling the parent constructor with the `oracle address`, `staleness threshold`, and `borrower operations address`. Notice line 13 immediately calls `_fetchPricePrimary()` to initialize `lastGoodPrice`, and line 16 asserts that `priceSource == primary` to ensure the oracle is functioning from the start.",
+      "file": "contracts/src/PriceFeeds/WETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 10,
+          "end": 17
+        }
+      ],
+      "title": "",
+      "id": "60824"
+    },
+    {
+      "type": "highlight",
+      "description": "The `fetchPrice()` method implements a two-path strategy. When `priceSource == primary` (line 21), it fetches fresh data from the oracle. Otherwise, it asserts the system is in `lastGoodPrice` mode (line 24) and returns the cached price with a `false` failure flag, ensuring continuous operation even during oracle outages.",
+      "file": "contracts/src/PriceFeeds/WETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 19,
+          "end": 26
+        }
+      ],
+      "title": "",
+      "id": "60825"
+    },
+    {
+      "type": "highlight",
+      "description": "The `fetchRedemptionPrice()` method demonstrates the contract's simplicity by directly returning `fetchPrice()`. This design choice means redemptions use identical pricing logic to all other operations, preventing arbitrage opportunities and ensuring consistency across the protocol.",
+      "file": "contracts/src/PriceFeeds/WETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 28,
+          "end": 31
+        }
+      ],
+      "title": "",
+      "id": "60826"
+    },
+    {
+      "type": "highlight",
+      "description": "The `_fetchPricePrimary()` method contains the core pricing logic. Line 38 queries the Chainlink oracle via the inherited `_getOracleAnswer()` method. If the oracle fails (`ethUsdOracleDown` is `true`), line 41 triggers the fallback mechanism and returns `true` to indicate a new failure. On success, line 43 updates `lastGoodPrice` with the fresh data.",
+      "file": "contracts/src/PriceFeeds/WETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 36,
+          "end": 45
+        }
+      ],
+      "title": "",
+      "id": "60827"
+    },
+    {
+      "type": "highlight",
+      "description": "This fallback handler orchestrates the system's response to an oracle failure. First, it calls into the `borrowerOperations` contract to halt new operations. Next, it switches the price source to use the last known good price for future requests. Finally, it emits an event to notify off-chain systems of the failure.",
+      "file": "contracts/src/PriceFeeds/MainnetPriceFeedBase.sol",
+      "highlight": [
+        {
+          "start": 68,
+          "end": 76
+        }
+      ],
+      "title": "",
+      "id": "60828"
+    },
+    {
+      "type": "mcq",
+      "description": "When `_fetchPricePrimary()` in `WETHPriceFeed.sol` determines the Chainlink oracle is unresponsive, what is the contract's immediate response according to the logic in `MainnetPriceFeedBase`?\n\nOptions:\n\n A). The transaction reverts immediately to prevent the system from using a stale price.\n\nB). It returns the `lastGoodPrice` but keeps `priceSource` as `primary`, allowing it to retry the oracle on the next call.\n\nC). It calls `_shutDownAndSwitchToLastGoodPrice`, which notifies `BorrowerOperations`, changes `priceSource` to `lastGoodPrice`, and returns the cached price with a failure flag.\n\nD). It returns a price of zero and a `true` failure flag to signal a critical error to the caller.\n\n\nCorrect: C). It calls `_shutDownAndSwitchToLastGoodPrice`, which notifies `BorrowerOperations`, changes `priceSource` to `lastGoodPrice`, and returns the cached price with a failure flag.\n\nExplanation: This is the correct sequence. When the oracle fails, `_fetchPricePrimary` calls `_shutDownAndSwitchToLastGoodPrice`. This function first calls `borrowerOperations.shutdownFromOracleFailure()` to halt new operations, then updates the state by setting `priceSource` to `lastGoodPrice`. Finally, it returns the cached `lastGoodPrice` along with a `true` failure flag to the original caller. The system does not revert, nor does it return a zero price, as both would be disruptive. It performs an explicit state change to enter a safe fallback mode rather than silently retrying.",
+      "title": "",
+      "id": "60855",
+      "text": "When `_fetchPricePrimary()` in `WETHPriceFeed.sol` determines the Chainlink oracle is unresponsive, what is the contract's immediate response according to the logic in `MainnetPriceFeedBase`?",
+      "answers": [
+        "The transaction reverts immediately to prevent the system from using a stale price.",
+        "It returns the `lastGoodPrice` but keeps `priceSource` as `primary`, allowing it to retry the oracle on the next call.",
+        "It calls `_shutDownAndSwitchToLastGoodPrice`, which notifies `BorrowerOperations`, changes `priceSource` to `lastGoodPrice`, and returns the cached price with a failure flag.",
+        "It returns a price of zero and a `true` failure flag to signal a critical error to the caller."
+      ],
+      "correct": 2,
+      "explanation": "This is the correct sequence. When the oracle fails, `_fetchPricePrimary` calls `_shutDownAndSwitchToLastGoodPrice`. This function first calls `borrowerOperations.shutdownFromOracleFailure()` to halt new operations, then updates the state by setting `priceSource` to `lastGoodPrice`. Finally, it returns the cached `lastGoodPrice` along with a `true` failure flag to the original caller. The system does not revert, nor does it return a zero price, as both would be disruptive. It performs an explicit state change to enter a safe fallback mode rather than silently retrying."
+    },
+    {
+      "type": "highlight",
+      "description": "This test demonstrates the fallback mechanism in action. Line 736 uses `etchStaleMockToEthOracle` to make the ETH-USD oracle stale, simulating a real-world oracle failure. When `fetchPrice()` is called again (line 741), the system correctly detects the failure (`ethUsdFailed == true` on line 744) and triggers the shutdown process.",
+      "file": "contracts/test/OracleMainnet.t.sol",
+      "highlight": [
+        {
+          "start": 735,
+          "end": 742
+        }
+      ],
+      "title": "",
+      "id": "60829"
+    },
+    {
+      "type": "highlight",
+      "description": "The test confirms that oracle failure triggers a protocol-wide shutdown by checking `TroveManager.shutdownTime()` equals the current block timestamp, proving the system-wide protection mechanism activated correctly.",
+      "file": "contracts/test/OracleMainnet.t.sol",
+      "highlight": [
+        {
+          "start": 747,
+          "end": 747
+        }
+      ],
+      "title": "",
+      "id": "60830"
+    },
+    {
+      "type": "highlight",
+      "description": "This function is a safety check that runs before any borrower operation. It fetches the latest price from the feed and also checks for a new oracle failure.\n\nThe `if` statement acts as a circuit breaker: if the price feed has just detected a failure, the entire transaction reverts. This mechanism prevents any unsafe trove operations from proceeding with unstable price data.",
+      "file": "contracts/src/BorrowerOperations.sol",
+      "highlight": [
+        {
+          "start": 1589,
+          "end": 1593
+        }
+      ],
+      "title": "",
+      "id": "60831"
+    },
+    {
+      "type": "highlight",
+      "description": "During `openTrove` operations, the price from `_requireOraclesLive()` is used to compute the **Individual Collateral Ratio (ICR)**, ensuring new troves only open when accurate pricing is available and collateral requirements are properly enforced.",
+      "file": "contracts/src/BorrowerOperations.sol",
+      "highlight": [
+        {
+          "start": 342,
+          "end": 342
+        }
+      ],
+      "title": "",
+      "id": "60847"
+    },
+    {
+      "type": "highlight",
+      "description": "CollateralRegistry uses `fetchRedemptionPrice()` through each TroveManager's `getUnbackedPortionPriceAndRedeemability()` method during redemptions. This ensures redemptions calculate the correct amount of WETH to return per **BOLD** token using current market prices.",
+      "file": "contracts/src/CollateralRegistry.sol",
+      "highlight": [
+        {
+          "start": 107,
+          "end": 108
+        }
+      ],
+      "title": "",
+      "id": "60832"
+    },
+    {
+      "type": "highlight",
+      "description": "This redemption test validates the price integration. Lines 1830-1831 fetch the expected `ETH-USD` price, lines 1834-1844 calculate expected collateral returns, and lines 1851-1858 verify the redemption used correct pricing by comparing actual `WETH` balance changes to expected amounts.",
+      "file": "contracts/test/OracleMainnet.t.sol",
+      "highlight": [
+        {
+          "start": 1829,
+          "end": 1858
+        }
+      ],
+      "title": "",
+      "id": "60833"
+    },
+    {
+      "type": "textOnly",
+      "description": "Since `WETH` is designed to maintain a 1:1 value with `ETH`, `WETHPriceFeed` reuses the `ETH-USD` Chainlink oracle. The contract includes staleness checks and provides a fallback to `lastGoodPrice` during oracle failures. This functionality is integrated with liquidations and redemptions to provide a price for `WETH` collateral.",
+      "title": "",
+      "id": "60834"
+    }
+  ]
+}

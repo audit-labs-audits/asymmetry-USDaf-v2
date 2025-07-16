@@ -1,0 +1,192 @@
+{
+  "title": "4.1: Core Contracts: BOLD Token",
+  "id": "BQTQ8PiV6UVSYXbhrNQ1+yAEiJymz/VknENlA3CzI0c=",
+  "originalId": 5015,
+  "position": 7,
+  "type": "text",
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "Welcome to the tour of the `BOLD Token`, the **stablecoin** of the protocol. `BOLD` serves as the **debt token** that users mint when they borrow against their collateral. This tour will cover its `ERC20` nature, special permissions, and its critical integration with the rest of the system.",
+      "title": "",
+      "id": "60869"
+    },
+    {
+      "type": "highlight",
+      "description": "The `IBoldToken.sol` interface defines all functions available on the `BoldToken` contract. It inherits from OpenZeppelin's `IERC20Metadata` and `IERC20Permit`, providing standard ERC20 functions like `transfer` and `approve`. Beyond these, it defines protocol-specific functions: `mint` for creating new tokens, `burn` for destroying them, and `sendToPool`/`returnFromPool` for specialized transfers with the Stability Pool.",
+      "file": "contracts/src/Interfaces/IBoldToken.sol",
+      "highlight": [
+        {
+          "start": 9,
+          "end": 26
+        }
+      ],
+      "title": "",
+      "id": "60870"
+    },
+    {
+      "type": "highlight",
+      "description": "The `BoldToken.sol` contract implements the interface and adds critical functionality. These comments highlight two key features: transfer protection to prevent users from accidentally losing tokens by sending them to core contracts, and specialized pool functions that only system contracts can use. This design ensures the token integrates safely with the protocol's complex interactions.",
+      "file": "contracts/src/BoldToken.sol",
+      "highlight": [
+        {
+          "start": 9,
+          "end": 17
+        }
+      ],
+      "title": "",
+      "id": "60871"
+    },
+    {
+      "type": "highlight",
+      "description": "These state variables are the foundation of **BOLD**'s permission system. The contract maintains mappings of authorized addresses for each core contract type. This design allows multiple instances of each contract type (supporting multiple collateral types) while maintaining strict access control over who can mint, burn, and transfer tokens.",
+      "file": "contracts/src/BoldToken.sol",
+      "highlight": [
+        {
+          "start": 25,
+          "end": 29
+        }
+      ],
+      "title": "",
+      "id": "60872"
+    },
+    {
+      "type": "highlight",
+      "description": "The setup functions configure the token with addresses of other core contracts. Notice the `_renounceOwnership()` call on line 63, which is a key step for decentralization. After setup, no one can change these permissions, making the system immutable and trustless. Users can be confident that only the intended contracts can ever mint or burn `BOLD tokens`.",
+      "file": "contracts/src/BoldToken.sol",
+      "highlight": [
+        {
+          "start": 40,
+          "end": 64
+        }
+      ],
+      "title": "",
+      "id": "60873"
+    },
+    {
+      "type": "highlight",
+      "description": "The `mint` function creates new **BOLD** tokens, but only specific contracts can call it. When a user opens a trove and borrows **BOLD**, the `BorrowerOperations` contract calls this function. The `ActivePool` also mints tokens during certain operations. This controlled minting ensures **BOLD** tokens are only created when backed by collateral.",
+      "file": "contracts/src/BoldToken.sol",
+      "highlight": [
+        {
+          "start": 68,
+          "end": 71
+        }
+      ],
+      "title": "",
+      "id": "60874"
+    },
+    {
+      "type": "highlight",
+      "description": "Here's the access control for minting. Only `BorrowerOperations` (BO) and `ActivePool` (AP) contracts can mint tokens. This restriction ensures that **BOLD** tokens are only created through legitimate borrowing operations where users have deposited sufficient collateral to back the newly minted tokens.",
+      "file": "contracts/src/BoldToken.sol",
+      "highlight": [
+        {
+          "start": 113,
+          "end": 118
+        }
+      ],
+      "title": "",
+      "id": "60875"
+    },
+    {
+      "type": "highlight",
+      "description": "The `burn` function destroys **BOLD tokens**, typically when users repay their debt or during liquidations. More contract types can burn tokens than mint them, reflecting the various ways tokens can be removed from circulation - debt repayment, liquidations, redemptions, and stability pool operations.",
+      "file": "contracts/src/BoldToken.sol",
+      "highlight": [
+        {
+          "start": 73,
+          "end": 76
+        }
+      ],
+      "title": "",
+      "id": "60876"
+    },
+    {
+      "type": "highlight",
+      "description": "The burn access control allows four contract types: `CollateralRegistry` (CR), `BorrowerOperations` (BO), `TroveManager` (TM), and `StabilityPool` (SP). Each serves different purposes: BO burns during debt repayment, TM during liquidations and redemptions, SP during stability pool operations, and CR coordinates these across multiple collateral types.",
+      "file": "contracts/src/BoldToken.sol",
+      "highlight": [
+        {
+          "start": 120,
+          "end": 126
+        }
+      ],
+      "title": "",
+      "id": "60877"
+    },
+    {
+      "type": "mcq",
+      "description": "The `BoldToken` contract grants `mint` authority to a smaller set of contracts (`BorrowerOperations`, `ActivePool`) than `burn` authority (`BorrowerOperations`, `TroveManager`, `StabilityPool`, `CollateralRegistry`). What is the primary architectural reason for this asymmetry?\n\nOptions:\n\n A). The asymmetry ensures that BOLD creation is tightly controlled by borrowing, while its removal is handled by multiple distinct protocol mechanisms like repayments, liquidations, and redemptions.\n\nB). It is a security model where burning is intentionally made easier than minting to provide a rapid deflationary mechanism in case of a system emergency.\n\nC). The contracts with only burn access are older versions, and this is a pattern for backward compatibility.\n\nD). Minting requires more gas, so fewer contracts are given the permission to reduce the overall gas cost of the system.\n\n\nCorrect: A). The asymmetry ensures that BOLD creation is tightly controlled by borrowing, while its removal is handled by multiple distinct protocol mechanisms like repayments, liquidations, and redemptions.\n\nExplanation: The correct answer reflects the core design. BOLD is only ever created (minted) when a user borrows against collateral, a process handled by `BorrowerOperations` and the `ActivePool`. However, BOLD is removed from circulation (burned) through several distinct actions: users repaying debt (`BorrowerOperations`), troves being liquidated or BOLD being redeemed (`TroveManager`), and the Stability Pool absorbing debt (`StabilityPool`). The permissions directly map to these specific system functions.",
+      "title": "",
+      "id": "60883",
+      "text": "The `BoldToken` contract grants `mint` authority to a smaller set of contracts (`BorrowerOperations`, `ActivePool`) than `burn` authority (`BorrowerOperations`, `TroveManager`, `StabilityPool`, `CollateralRegistry`). What is the primary architectural reason for this asymmetry?",
+      "answers": [
+        "The asymmetry ensures that BOLD creation is tightly controlled by borrowing, while its removal is handled by multiple distinct protocol mechanisms like repayments, liquidations, and redemptions.",
+        "It is a security model where burning is intentionally made easier than minting to provide a rapid deflationary mechanism in case of a system emergency.",
+        "The contracts with only burn access are older versions, and this is a pattern for backward compatibility.",
+        "Minting requires more gas, so fewer contracts are given the permission to reduce the overall gas cost of the system."
+      ],
+      "correct": 0,
+      "explanation": "The correct answer reflects the core design. BOLD is only ever created (minted) when a user borrows against collateral, a process handled by `BorrowerOperations` and the `ActivePool`. However, BOLD is removed from circulation (burned) through several distinct actions: users repaying debt (`BorrowerOperations`), troves being liquidated or BOLD being redeemed (`TroveManager`), and the Stability Pool absorbing debt (`StabilityPool`). The permissions directly map to these specific system functions."
+    },
+    {
+      "type": "highlight",
+      "description": "These specialized transfer functions handle **Stability Pool** interactions. When users deposit `BOLD` into the **Stability Pool**, `sendToPool` moves tokens from the user to the pool. When they withdraw, `returnFromPool` moves tokens back. These functions bypass normal transfer restrictions because the pool needs to manage user funds directly.",
+      "file": "contracts/src/BoldToken.sol",
+      "highlight": [
+        {
+          "start": 78,
+          "end": 86
+        }
+      ],
+      "title": "",
+      "id": "60878"
+    },
+    {
+      "type": "highlight",
+      "description": "Only `Stability Pool contracts` can call the `pool transfer functions`. This ensures that tokens can only be moved to/from the pool through legitimate deposit and withdrawal operations, maintaining the integrity of the stability mechanism.",
+      "file": "contracts/src/BoldToken.sol",
+      "highlight": [
+        {
+          "start": 128,
+          "end": 130
+        }
+      ],
+      "title": "",
+      "id": "60879"
+    },
+    {
+      "type": "highlight",
+      "description": "The overridden `transfer` and `transferFrom` functions add safety checks to prevent user errors. Before allowing any transfer, they verify the recipient is valid. This protection prevents users from accidentally sending tokens to addresses that can't handle them, which would effectively burn the tokens permanently.",
+      "file": "contracts/src/BoldToken.sol",
+      "highlight": [
+        {
+          "start": 90,
+          "end": 102
+        }
+      ],
+      "title": "",
+      "id": "60880"
+    },
+    {
+      "type": "highlight",
+      "description": "The recipient validation prevents transfers to two dangerous addresses: the `zero address` (which would burn tokens) and the `token contract` itself (which would lock them permanently). This simple check prevents common user mistakes that could result in permanent token loss.",
+      "file": "contracts/src/BoldToken.sol",
+      "highlight": [
+        {
+          "start": 106,
+          "end": 111
+        }
+      ],
+      "title": "",
+      "id": "60881"
+    },
+    {
+      "type": "textOnly",
+      "description": "This concludes our tour of the `BOLD` token. You now understand how it serves as the protocol's stablecoin, with carefully controlled minting and burning that ensures tokens are only created when backed by collateral and only destroyed through legitimate protocol operations. The access control system and transfer protections work together to maintain the token's integrity while protecting users from common mistakes.",
+      "title": "",
+      "id": "60882"
+    }
+  ]
+}

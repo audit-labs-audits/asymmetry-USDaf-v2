@@ -1,0 +1,68 @@
+{
+  "title": "5.1: WETH Price Feed: Overview",
+  "id": "TPiIecRN6CGzqyWjAMqxOqebUQ0T3rtPYjpl73wxrCU=",
+  "originalId": 5019,
+  "position": 8,
+  "type": "text",
+  "steps": [
+    {
+      "type": "highlight",
+      "description": "The `IWETH` interface provides the function definitions for wrapping and unwrapping Ether. The `deposit` function wraps ETH into `WETH`, and the `withdraw` function unwraps `WETH` back to ETH, maintaining a 1:1 parity.",
+      "file": "contracts/src/Interfaces/IWETH.sol",
+      "highlight": [
+        {
+          "start": 7,
+          "end": 10
+        }
+      ],
+      "title": "",
+      "id": "60747"
+    },
+    {
+      "type": "highlight",
+      "description": "The `WETHPriceFeed` contract is responsible for providing the price of WETH. It inherits from `MainnetPriceFeedBase`, which enables it to fetch the ETH-USD price from a `Chainlink` oracle.",
+      "file": "contracts/src/PriceFeeds/WETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 9,
+          "end": 12
+        }
+      ],
+      "title": "",
+      "id": "60748"
+    },
+    {
+      "type": "highlight",
+      "description": "The `fetchPrice()` and `fetchRedemptionPrice()` functions are the two public entry points for retrieving the **WETH** price. For **WETH**, the redemption price is the same as the market price.",
+      "file": "contracts/src/PriceFeeds/WETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 19,
+          "end": 31
+        }
+      ],
+      "title": "",
+      "id": "60749"
+    },
+    {
+      "type": "textOnly",
+      "description": "This component fetches `ETH-USD` pricing for `WETH` collateral used by `TroveManager` (liquidations), `BorrowerOperations`, and `CollateralRegistry` (redemptions). Deep dives into `IWETH` and `WETHPriceFeed` implementation will follow.",
+      "title": "",
+      "id": "60750"
+    },
+    {
+      "type": "mcq",
+      "description": "How does the `WETHPriceFeed` contract determine the price of `WETH`?\n\nOptions:\n\n A). It relies on its `fetchRedemptionPrice()` function, which contains the primary price logic.\n\nB). It inherits from `MainnetPriceFeedBase` to query a Chainlink oracle for the ETH-USD price.\n\nC). It directly queries the `IWETH` contract for the current exchange rate.\n\n\nCorrect: B). It inherits from `MainnetPriceFeedBase` to query a Chainlink oracle for the ETH-USD price.\n\nExplanation: The `WETHPriceFeed` contract inherits from `MainnetPriceFeedBase`, which provides the functionality to fetch the ETH-USD price from a Chainlink oracle. The `IWETH` interface is for wrapping and unwrapping ETH, not for price data. The `fetchRedemptionPrice()` function calls `fetchPrice()` and does not contain separate pricing logic.",
+      "title": "",
+      "id": "60751",
+      "text": "How does the `WETHPriceFeed` contract determine the price of `WETH`?",
+      "answers": [
+        "It relies on its `fetchRedemptionPrice()` function, which contains the primary price logic.",
+        "It inherits from `MainnetPriceFeedBase` to query a Chainlink oracle for the ETH-USD price.",
+        "It directly queries the `IWETH` contract for the current exchange rate."
+      ],
+      "correct": 1,
+      "explanation": "The `WETHPriceFeed` contract inherits from `MainnetPriceFeedBase`, which provides the functionality to fetch the ETH-USD price from a Chainlink oracle. The `IWETH` interface is for wrapping and unwrapping ETH, not for price data. The `fetchRedemptionPrice()` function calls `fetchPrice()` and does not contain separate pricing logic."
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "title": "5.2: IWETH Interface Details",
+  "id": "XHxS4JNtqW5i0vwldjVPMGpwdwt2BvJ7wO50ONMtrI0=",
+  "originalId": 5021,
+  "position": 9,
+  "type": "text",
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "This tour explains the `WETH` interface, how `ETH` is wrapped and unwrapped, and its significance as collateral.",
+      "title": "",
+      "id": "60741"
+    },
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/Interfaces/IWETH.sol"
+      ],
+      "description": "Let's start by examining the `IWETH.sol` contract. Line 5 imports `IERC20Metadata`. This is important because it means the WETH interface inherits standard ERC20 functions like `name`, `symbol`, `decimals`, and `totalSupply`. This makes WETH compatible with other contracts that expect an ERC20 token.",
+      "title": "",
+      "id": "60742"
+    },
+    {
+      "type": "highlight",
+      "description": "This interface defines the key functions for wrapping and unwrapping Ether.\n\nThe `payable` `deposit` function wraps ETH into an equivalent amount of WETH. The `withdraw` function does the reverse, burning WETH to send the corresponding amount of ETH back to your wallet.",
+      "file": "contracts/src/Interfaces/IWETH.sol",
+      "highlight": [
+        {
+          "start": 7,
+          "end": 10
+        }
+      ],
+      "title": "",
+      "id": "60743"
+    },
+    {
+      "type": "textOnly",
+      "description": "So, why does `WETH` exist? Native `ETH` was created before the `ERC20` token standard and is not compliant with it. `WETH` is a solution that **\"wraps\"** `ETH` in an `ERC20`-compliant contract. This allows `ETH` to interact seamlessly with a wide range of decentralized applications, including being used as collateral in this system's troves.",
+      "title": "",
+      "id": "60744"
+    },
+    {
+      "type": "textOnly",
+      "description": "To summarize, `WETH` is an `ERC20` token that maintains a 1:1 value peg with `ETH`. This direct relationship is very useful because it means we can rely on a single, liquid `ETH/USD` price oracle for valuing `WETH`. There's no need for a separate, less liquid `WETH/USD` oracle, which simplifies the system and reduces risk.",
+      "title": "",
+      "id": "60745"
+    },
+    {
+      "type": "mcq",
+      "description": "What is the primary architectural advantage of using `WETH` instead of native `ETH` as collateral in a system designed around `ERC20` tokens?\n\nOptions:\n\n A). It provides a standardized ERC20 interface, allowing for uniform handling of collateral assets.\n\nB). It allows the system to avoid using a price oracle, as its value is pegged 1:1 to ETH.\n\nC). The `deposit()` function is more gas-efficient than receiving native ETH via a `payable` fallback.\n\n\nCorrect: A). It provides a standardized ERC20 interface, allowing for uniform handling of collateral assets.\n\nExplanation: The correct answer is that WETH provides a standard ERC20 interface. Native ETH does not conform to the ERC20 standard, so wrapping it makes it compatible with contracts designed to interact with tokens (e.g., for transfers, approvals, and balance checks). While the value is pegged 1:1, a price oracle is still needed to determine the USD value of the collateral. Gas efficiency is not the primary driver for its use.",
+      "title": "",
+      "id": "60746",
+      "text": "What is the primary architectural advantage of using `WETH` instead of native `ETH` as collateral in a system designed around `ERC20` tokens?",
+      "answers": [
+        "It provides a standardized ERC20 interface, allowing for uniform handling of collateral assets.",
+        "It allows the system to avoid using a price oracle, as its value is pegged 1:1 to ETH.",
+        "The `deposit()` function is more gas-efficient than receiving native ETH via a `payable` fallback."
+      ],
+      "correct": 0,
+      "explanation": "The correct answer is that WETH provides a standard ERC20 interface. Native ETH does not conform to the ERC20 standard, so wrapping it makes it compatible with contracts designed to interact with tokens (e.g., for transfers, approvals, and balance checks). While the value is pegged 1:1, a price oracle is still needed to determine the USD value of the collateral. Gas efficiency is not the primary driver for its use."
+    }
+  ]
+}

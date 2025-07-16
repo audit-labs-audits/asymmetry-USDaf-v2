@@ -1,0 +1,321 @@
+{
+  "title": "2.2: AddressesRegistry: State Variables",
+  "id": "6y5pTiomsD4WWRjEs17lhq5a09RHm0YocVjco30FoF0=",
+  "originalId": 5026,
+  "position": 3,
+  "type": "text",
+  "steps": [
+    {
+      "type": "textOnly",
+      "description": "Let's examine the state variables of the `AddressesRegistry` contract. These variables define the addresses of the core smart contracts and key system parameters for the **BOLD** protocol.",
+      "title": "",
+      "id": "60757"
+    },
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/AddressesRegistry.sol"
+      ],
+      "description": "First, let's look at the address variables. Each of these holds the address of a critical contract in the **BOLD** ecosystem.",
+      "title": "",
+      "id": "60758"
+    },
+    {
+      "type": "highlight",
+      "description": "`collToken`: This is the ERC20 token that is used as collateral in the system. The `IERC20Metadata` interface suggests it's a standard token with functions like `name()`, `symbol()`, and `decimals()`. ",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 10,
+          "end": 10
+        }
+      ],
+      "title": "",
+      "id": "60759"
+    },
+    {
+      "type": "highlight",
+      "description": "`borrowerOperations`: This contract is the main entry point for users (borrowers) to interact with the protocol. It handles operations like opening a trove, adding or removing collateral, and borrowing or repaying.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 11,
+          "end": 11
+        }
+      ],
+      "title": "",
+      "id": "60760"
+    },
+    {
+      "type": "highlight",
+      "description": "`troveManager`: This contract manages the troves, which are the core data structures representing a user's collateral and debt position. It handles the logic for liquidations and redemptions.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 12,
+          "end": 12
+        }
+      ],
+      "title": "",
+      "id": "60761"
+    },
+    {
+      "type": "highlight",
+      "description": "`troveNFT` and `metadataNFT`: Troves are represented as NFTs, and these contracts manage the NFT functionality and its associated metadata.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 13,
+          "end": 14
+        }
+      ],
+      "title": "",
+      "id": "60762"
+    },
+    {
+      "type": "highlight",
+      "description": "`stabilityPool`: This contract is a key part of the system's stability mechanism. Users can deposit `BOLD` into the `Stability Pool` to help absorb debt from liquidated troves and earn collateral in return.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 15,
+          "end": 15
+        }
+      ],
+      "title": "",
+      "id": "60763"
+    },
+    {
+      "type": "highlight",
+      "description": "`priceFeed`: This contract is responsible for providing the price of the collateral token relative to USD. It's a critical component for calculating collateralization ratios.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 16,
+          "end": 16
+        }
+      ],
+      "title": "",
+      "id": "60764"
+    },
+    {
+      "type": "highlight",
+      "description": "`activePool` and `defaultPool`: The `activePool` holds the collateral of all active troves. When a trove is liquidated, its collateral and debt are moved to the `defaultPool`.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 17,
+          "end": 18
+        }
+      ],
+      "title": "",
+      "id": "60765"
+    },
+    {
+      "type": "highlight",
+      "description": "`gasPoolAddress`: This address points to a pool used to subsidize gas costs for liquidators, ensuring that liquidations can happen in a timely manner even during periods of high gas prices.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 19,
+          "end": 19
+        }
+      ],
+      "title": "",
+      "id": "60766"
+    },
+    {
+      "type": "highlight",
+      "description": "`collSurplusPool`: If a liquidated trove has more collateral than debt, the excess collateral is sent to this pool for the original owner to claim.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 20,
+          "end": 20
+        }
+      ],
+      "title": "",
+      "id": "60767"
+    },
+    {
+      "type": "highlight",
+      "description": "**sortedTroves**: This contract maintains a sorted list of all troves by their collateralization ratio. This list is used to liquidate the riskiest troves first.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 21,
+          "end": 21
+        }
+      ],
+      "title": "",
+      "id": "60768"
+    },
+    {
+      "type": "highlight",
+      "description": "`interestRouter`: This contract manages the interest rates for **borrowing**.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 22,
+          "end": 22
+        }
+      ],
+      "title": "",
+      "id": "60769"
+    },
+    {
+      "type": "highlight",
+      "description": "`hintHelpers`: This contract provides helper functions to make it easier to interact with the `sortedTroves` list, such as finding the correct insertion point for a new trove.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 23,
+          "end": 23
+        }
+      ],
+      "title": "",
+      "id": "60770"
+    },
+    {
+      "type": "highlight",
+      "description": "`multiTroveGetter`: A utility contract that allows for fetching data from multiple troves in a single call, reducing the overall gas cost.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 24,
+          "end": 24
+        }
+      ],
+      "title": "",
+      "id": "60771"
+    },
+    {
+      "type": "highlight",
+      "description": "**collateralRegistry**: This contract is responsible for managing the different types of collateral that can be used in the system.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 25,
+          "end": 25
+        }
+      ],
+      "title": "",
+      "id": "60772"
+    },
+    {
+      "type": "highlight",
+      "description": "`boldToken`: The address of the `BOLD` token, which is the stablecoin of the protocol.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 26,
+          "end": 26
+        }
+      ],
+      "title": "",
+      "id": "60773"
+    },
+    {
+      "type": "highlight",
+      "description": "`WETH`: The address of the Wrapped Ether contract. This is likely the primary collateral token.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 27,
+          "end": 27
+        }
+      ],
+      "title": "",
+      "id": "60774"
+    },
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/AddressesRegistry.sol"
+      ],
+      "description": "Next, we have the **numeric parameters** that govern the system's behavior.",
+      "title": "",
+      "id": "60775"
+    },
+    {
+      "type": "highlight",
+      "description": "**`CCR` (Critical Collateralization Ratio)** and **`SCR` (Shutdown Collateralization Ratio)** are system-wide thresholds. If the total collateralization ratio (**`TCR`**) of the system falls below `CCR`, certain borrowing operations are restricted. If it falls below `SCR`, the borrowing market for that collateral is shut down.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 30,
+          "end": 33
+        }
+      ],
+      "title": "",
+      "id": "60776"
+    },
+    {
+      "type": "highlight",
+      "description": "`MCR` (Minimum Collateralization Ratio) and `BCR` (Batch Collateralization Ratio) apply to individual troves. `MCR` is the absolute minimum ratio a trove must maintain to avoid liquidation. `BCR` is a slightly higher ratio required when performing batch operations or adjusting a trove that is part of a batch.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 36,
+          "end": 38
+        }
+      ],
+      "title": "",
+      "id": "60777"
+    },
+    {
+      "type": "highlight",
+      "description": "`LIQUIDATION_PENALTY_SP` and `LIQUIDATION_PENALTY_REDISTRIBUTION` are penalties applied during liquidation. A portion of the liquidated collateral is given to the Stability Pool (`LIQUIDATION_PENALTY_SP`), and another portion is redistributed to other active troves (`LIQUIDATION_PENALTY_REDISTRIBUTION`).",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 40,
+          "end": 42
+        }
+      ],
+      "title": "",
+      "id": "60778"
+    },
+    {
+      "type": "highlight",
+      "description": "Notice that `CCR`, `SCR`, `MCR`, `BCR`, `LIQUIDATION_PENALTY_SP`, and `LIQUIDATION_PENALTY_REDISTRIBUTION` are all declared as `immutable`. This is an important security feature.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 30,
+          "end": 42
+        }
+      ],
+      "title": "",
+      "id": "60779"
+    },
+    {
+      "type": "highlight",
+      "description": "The values for these immutable variables are set once in the constructor when the `AddressesRegistry` contract is deployed and cannot be changed afterward. This provides predictability and trust in the system's core parameters.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 71,
+          "end": 94
+        }
+      ],
+      "title": "",
+      "id": "60780"
+    },
+    {
+      "type": "mcq",
+      "description": "What is the primary architectural reason for making parameters like `MCR` and `SCR` `immutable` in the `AddressesRegistry` contract?\n\nOptions:\n\n A). To optimize gas costs, since reading `immutable` variables is cheaper than reading from contract storage.\n\nB). To ensure the protocol's fundamental economic parameters are permanent and cannot be altered after deployment, providing predictability and trust.\n\nC). Because these parameters are derived from the contract addresses, which are set later in a separate function call.\n\nD). To allow the contract owner to set them once during a grace period after deployment before renouncing ownership.\n\n\nCorrect: B). To ensure the protocol's fundamental economic parameters are permanent and cannot be altered after deployment, providing predictability and trust.\n\nExplanation: The correct choice is that `immutable` variables guarantee the protocol's core economic rules are fixed at deployment. This is a critical design choice for user trust, as it ensures the fundamental parameters cannot be manipulated. While using `immutable` does offer gas savings (making option 1 partially true, but not the primary reason), its main purpose here is to enforce immutability for security and predictability. Option 3 is incorrect; the parameters are set in the constructor, independently of the contract addresses. Option 4 is also incorrect; `immutable` variables can only be set in the constructor, not in a separate function call after deployment.",
+      "title": "",
+      "id": "60851",
+      "text": "What is the primary architectural reason for making parameters like `MCR` and `SCR` `immutable` in the `AddressesRegistry` contract?",
+      "answers": [
+        "To optimize gas costs, since reading `immutable` variables is cheaper than reading from contract storage.",
+        "To ensure the protocol's fundamental economic parameters are permanent and cannot be altered after deployment, providing predictability and trust.",
+        "Because these parameters are derived from the contract addresses, which are set later in a separate function call.",
+        "To allow the contract owner to set them once during a grace period after deployment before renouncing ownership."
+      ],
+      "correct": 1,
+      "explanation": "The correct choice is that `immutable` variables guarantee the protocol's core economic rules are fixed at deployment. This is a critical design choice for user trust, as it ensures the fundamental parameters cannot be manipulated. While using `immutable` does offer gas savings (making option 1 partially true, but not the primary reason), its main purpose here is to enforce immutability for security and predictability. Option 3 is incorrect; the parameters are set in the constructor, independently of the contract addresses. Option 4 is also incorrect; `immutable` variables can only be set in the constructor, not in a separate function call after deployment."
+    }
+  ]
+}

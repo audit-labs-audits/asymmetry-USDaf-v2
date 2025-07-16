@@ -1,0 +1,129 @@
+{
+  "title": "6.1: External Integrations: RETH Price Feed: Overview",
+  "id": "l9qBaOOy8/2ni9lRcQMKCTWdiO86nC8LEwYfJh1cG8I=",
+  "originalId": 5020,
+  "position": 11,
+  "type": "text",
+  "steps": [
+    {
+      "type": "highlight",
+      "description": "This file defines the interface for the `RETH` token contract. The `getExchangeRate` function on line 6 returns the current `RETH`→`ETH` exchange rate, which the price feed uses as the canonical rate.",
+      "file": "contracts/src/Interfaces/IRETHToken.sol",
+      "highlight": [
+        {
+          "start": 5,
+          "end": 7
+        }
+      ],
+      "title": "",
+      "id": "61399"
+    },
+    {
+      "type": "highlight",
+      "description": "This extends `IMainnetPriceFeed`, adding `rEthEthOracle()`. The base interface defines primary/fallback logic, while `rEthEthOracle` exposes the **Chainlink RETH→ETH feed**, its staleness threshold, and decimals.",
+      "file": "contracts/src/Interfaces/IRETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 7,
+          "end": 9
+        }
+      ],
+      "title": "",
+      "id": "61400"
+    },
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/PriceFeeds/RETHPriceFeed.sol"
+      ],
+      "description": "This contract implements the RETH price feed. It inherits composite logic for combining a market oracle with a canonical LST rate and fulfills the `IRETHPriceFeed` interface.",
+      "title": "",
+      "id": "61401"
+    },
+    {
+      "type": "textOnly",
+      "description": "The instructions asked to highlight state variables `rethToken` and `wethPriceFeed`, but those exact names do not appear in this contract. Here are the actual key state variables fulfilling similar roles.",
+      "title": "",
+      "id": "61402"
+    },
+    {
+      "type": "highlight",
+      "description": "`Oracle public rEthEthOracle;` holds the `Chainlink RETH→ETH feed`, its staleness threshold, and decimals, used to fetch the market RETH price in ETH.",
+      "file": "contracts/src/PriceFeeds/RETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 33,
+          "end": 33
+        }
+      ],
+      "title": "",
+      "id": "61403"
+    },
+    {
+      "type": "highlight",
+      "description": "`address public rateProviderAddress;` (inherited) stores the `RETH` token address, used to call `getExchangeRate()` for the canonical ETH-per-RETH rate.",
+      "file": "contracts/src/PriceFeeds/CompositePriceFeed.sol",
+      "highlight": [
+        {
+          "start": 13,
+          "end": 13
+        }
+      ],
+      "title": "",
+      "id": "61404"
+    },
+    {
+      "type": "highlight",
+      "description": "`Oracle public ethUsdOracle;` (inherited) holds the `Chainlink ETH→USD feed`, used to convert RETH prices into USD.",
+      "file": "contracts/src/PriceFeeds/MainnetPriceFeedBase.sol",
+      "highlight": [
+        {
+          "start": 38,
+          "end": 38
+        }
+      ],
+      "title": "",
+      "id": "61405"
+    },
+    {
+      "type": "highlight",
+      "description": "This function orchestrates the price lookup. It checks the `priceSource` to decide whether to use the primary price feed or to engage the fallback logic for when the system is shut down.",
+      "file": "contracts/src/PriceFeeds/CompositePriceFeed.sol",
+      "highlight": [
+        {
+          "start": 30,
+          "end": 35
+        }
+      ],
+      "title": "",
+      "id": "61406"
+    },
+    {
+      "type": "highlight",
+      "description": "This function combines ETH→USD, RETH→ETH, and canonical rates to compute the final RETH→USD price, with shutdown guards and deviation safeguards.",
+      "file": "contracts/src/PriceFeeds/RETHPriceFeed.sol",
+      "highlight": [
+        {
+          "start": 37,
+          "end": 41
+        }
+      ],
+      "title": "",
+      "id": "61407"
+    },
+    {
+      "type": "mcq",
+      "description": "In `_fetchPricePrimary`, the default price is determined by `LiquityMath._min(rEthUsdMarketPrice, rEthUsdCanonicalPrice)`. What is the primary security rationale for this choice?\n\nOptions:\n\n A). It prevents downward manipulation of the market price, which could cause premature liquidations.\n\nB). It protects against upward manipulation of the market price, ensuring loans are not issued against an artificially inflated collateral value.\n\nC). It applies the same conservative pricing used for redemptions to all operations for consistency.\n\n\nCorrect: B). It protects against upward manipulation of the market price, ensuring loans are not issued against an artificially inflated collateral value.\n\nExplanation: Using `_min` protects the protocol against issuing undercollateralized loans. If an attacker could manipulate the RETH market price upwards, the protocol might value the collateral too highly. Taking the minimum of the market price and the more stable canonical price provides a safer, more conservative valuation. The logic for redemptions is different (`_max` is used) to mitigate a different type of arbitrage risk. Using `_min` would not protect against downward manipulation; it would worsen its impact.",
+      "title": "",
+      "id": "61468",
+      "text": "In `_fetchPricePrimary`, the default price is determined by `LiquityMath._min(rEthUsdMarketPrice, rEthUsdCanonicalPrice)`. What is the primary security rationale for this choice?",
+      "answers": [
+        "It prevents downward manipulation of the market price, which could cause premature liquidations.",
+        "It protects against upward manipulation of the market price, ensuring loans are not issued against an artificially inflated collateral value.",
+        "It applies the same conservative pricing used for redemptions to all operations for consistency."
+      ],
+      "correct": 1,
+      "explanation": "Using `_min` protects the protocol against issuing undercollateralized loans. If an attacker could manipulate the RETH market price upwards, the protocol might value the collateral too highly. Taking the minimum of the market price and the more stable canonical price provides a safer, more conservative valuation. The logic for redemptions is different (`_max` is used) to mitigate a different type of arbitrage risk. Using `_min` would not protect against downward manipulation; it would worsen its impact."
+    }
+  ]
+}

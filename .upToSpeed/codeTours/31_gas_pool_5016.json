@@ -1,0 +1,139 @@
+{
+  "title": "3.1: Gas Pool",
+  "id": "fyLg4h8GhUsYFjjQBXVt+l40HwKXg55xq3pOxhsV38A=",
+  "originalId": 5016,
+  "position": 6,
+  "type": "text",
+  "steps": [
+    {
+      "type": "highlight",
+      "description": "The purpose of the `GasPool.sol` contract is clearly defined in this comment. It serves as a dedicated holding contract for WETH tokens used in the gas compensation mechanism. The key insight is the flow: when a borrower opens a trove, additional WETH is pulled from them and sent **TO** this contract. This WETH then sits in the `GasPool` until it's either refunded back to the borrower when they close their trove, or paid out to a liquidator as compensation for performing a liquidation.",
+      "file": "contracts/src/GasPool.sol",
+      "highlight": [
+        {
+          "start": 10,
+          "end": 17
+        }
+      ],
+      "title": "",
+      "id": "60837"
+    },
+    {
+      "type": "highlight",
+      "description": "The gas compensation mechanism uses a fixed amount of `WETH` defined in the constants. Every time a trove is opened, exactly 0.0375 **ETH** worth of `WETH` is deposited into the `GasPool`. This amount is standardized across all troves regardless of their size or collateral value.",
+      "file": "contracts/src/Dependencies/Constants.sol",
+      "highlight": [
+        {
+          "start": 12,
+          "end": 13
+        }
+      ],
+      "title": "",
+      "id": "60838"
+    },
+    {
+      "type": "highlight",
+      "description": "Additionally, **liquidators** receive collateral-based gas compensation. The liquidator gets **0.5%** of the liquidated collateral (calculated by dividing by 200), but this is capped at **2 ETH** maximum. This provides an additional incentive for liquidations beyond the fixed **ETH gas compensation**.",
+      "file": "contracts/src/Dependencies/Constants.sol",
+      "highlight": [
+        {
+          "start": 39,
+          "end": 41
+        }
+      ],
+      "title": "",
+      "id": "60839"
+    },
+    {
+      "type": "textOnly",
+      "description": "Now let's examine how the `GasPool` contract enables this compensation system through its `constructor`.",
+      "title": "",
+      "id": "60840"
+    },
+    {
+      "type": "highlight",
+      "description": "The `constructor` performs the initial setup for the gas compensation mechanism. It retrieves the addresses of the `WETH`, `BorrowerOperations`, and `TroveManager` contracts from the `AddressesRegistry`. On lines 25 and 27, it grants approval using `type(uint256).max`, which provides unlimited approval to both contracts to spend `WETH` from the `GasPool`.",
+      "file": "contracts/src/GasPool.sol",
+      "highlight": [
+        {
+          "start": 19,
+          "end": 28
+        }
+      ],
+      "title": "",
+      "id": "60841"
+    },
+    {
+      "type": "highlight",
+      "description": "The use of `type(uint256).max` is a deliberate design choice that grants unlimited approval. This avoids the need for repeated approval transactions and ensures that the system can always process refunds and liquidation payments without running into approval limits. Since the `GasPool` is designed specifically to hold funds for these operations and only these two trusted contracts can spend from it, the risks of unlimited approval are mitigated. This method also saves gas by not requiring repeated approval transactions.",
+      "file": "contracts/src/GasPool.sol",
+      "highlight": [
+        {
+          "start": 25,
+          "end": 25
+        }
+      ],
+      "title": "",
+      "id": "60842"
+    },
+    {
+      "type": "highlight",
+      "description": "The `BorrowerOperations` contract needs this approval because it handles the refunding of gas compensation. When a borrower closes their active trove, the `BorrowerOperations` contract must be able to transfer exactly 0.0375 ETH worth of `WETH` back to the borrower from the `GasPool`. The unlimited approval ensures this refund can happen seamlessly.",
+      "file": "contracts/src/GasPool.sol",
+      "highlight": [
+        {
+          "start": 24,
+          "end": 25
+        }
+      ],
+      "title": "",
+      "id": "60843"
+    },
+    {
+      "type": "highlight",
+      "description": "The `TroveManager` contract needs approval for liquidations. When a trove becomes unhealthy (its collateral ratio falls below the minimum collateral ratio - `110%` for `WETH` or `120%` for staked `ETH`), the `TroveManager` must be able to pay both the fixed `ETH` gas compensation (`0.0375 ETH`) and the collateral-based compensation (`0.5%` of liquidated collateral, capped at `2 ETH`) to the liquidator.",
+      "file": "contracts/src/GasPool.sol",
+      "highlight": [
+        {
+          "start": 26,
+          "end": 27
+        }
+      ],
+      "title": "",
+      "id": "60844"
+    },
+    {
+      "type": "mcq",
+      "description": "The `GasPool` constructor approves `TroveManager` to spend its **WETH**. This approval is necessary for which specific operation?\n\nOptions:\n\n A). Refunding the fixed WETH gas compensation to a borrower who closes their trove.\n\nB). Paying out both fixed and variable WETH gas compensation to the initiator of a liquidation.\n\nC). Transferring a borrower's WETH collateral from their trove to the Stability Pool during liquidation.\n\n\nCorrect: B). Paying out both fixed and variable WETH gas compensation to the initiator of a liquidation.\n\nExplanation: The `TroveManager` requires approval to spend WETH from the `GasPool` specifically to compensate liquidators. This includes both the fixed `ETH_GAS_COMPENSATION` and the variable, collateral-based compensation. Refunding borrowers is handled by `BorrowerOperations`, and managing a trove's collateral is a separate process that does not involve the `GasPool`'s funds.",
+      "title": "",
+      "id": "60853",
+      "text": "The `GasPool` constructor approves `TroveManager` to spend its **WETH**. This approval is necessary for which specific operation?",
+      "answers": [
+        "Refunding the fixed WETH gas compensation to a borrower who closes their trove.",
+        "Paying out both fixed and variable WETH gas compensation to the initiator of a liquidation.",
+        "Transferring a borrower's WETH collateral from their trove to the Stability Pool during liquidation."
+      ],
+      "correct": 1,
+      "explanation": "The `TroveManager` requires approval to spend WETH from the `GasPool` specifically to compensate liquidators. This includes both the fixed `ETH_GAS_COMPENSATION` and the variable, collateral-based compensation. Refunding borrowers is handled by `BorrowerOperations`, and managing a trove's collateral is a separate process that does not involve the `GasPool`'s funds."
+    },
+    {
+      "type": "highlight",
+      "description": "Troves become eligible for liquidation when their individual collateral ratio falls below the `Minimum Collateral Ratio (MCR)`. For `WETH` troves, this threshold is 110%, while for staked `ETH` troves it's 120%. This economic incentive structure ensures that liquidators are compensated for maintaining system health by removing under-collateralized positions.",
+      "file": "contracts/src/Dependencies/Constants.sol",
+      "highlight": [
+        {
+          "start": 23,
+          "end": 24
+        }
+      ],
+      "title": "",
+      "id": "60845"
+    },
+    {
+      "type": "textOnly",
+      "description": "The design of using a separate `GasPool` contract rather than managing gas compensation directly in the main contracts provides several key advantages. It creates clear separation of concerns, making the gas compensation mechanism easier to understand and audit. It centralizes the holding of these funds, reducing complexity in the main business logic contracts. Most importantly, it ensures that gas compensation funds are always available and clearly segregated from user funds, providing both security and predictability to the liquidation incentive system.",
+      "title": "",
+      "id": "60846"
+    }
+  ]
+}

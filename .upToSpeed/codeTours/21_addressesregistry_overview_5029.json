@@ -1,0 +1,123 @@
+{
+  "title": "2.1: AddressesRegistry: Overview",
+  "id": "ZwVr3GoZwsblFU3lTkexY2/4v87mAjrsewaEg9Yo1Qk=",
+  "originalId": 5029,
+  "position": 2,
+  "type": "text",
+  "steps": [
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/AddressesRegistry.sol"
+      ],
+      "description": "This `contract` is a great place to start our tour of the `Asymmetry codebase`, because it reveals the system's architecture at a glance. In blockchain systems, `contracts` need to find and communicate with each other, but their addresses aren't known until deployment. This `registry` solves that problem by acting as a central directory.",
+      "title": "",
+      "id": "60806"
+    },
+    {
+      "type": "highlight",
+      "description": "Here's the heart of the **registry pattern** - a collection of contract addresses that represent the entire system. Each interface represents a different responsibility: `IBorrowerOperations` handles loan creation, `ITroveManager` manages liquidations, `IStabilityPool` provides stability mechanisms, `IPriceFeed` supplies price data, and so on. This modular design allows contracts to be upgraded independently while maintaining their connections.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 10,
+          "end": 27
+        }
+      ],
+      "title": "",
+      "id": "60809"
+    },
+    {
+      "type": "highlight",
+      "description": "Beyond addresses, this registry stores critical system parameters that define the protocol's safety boundaries. The **CCR** (`Critical Collateral Ratio`) triggers restrictions when the system becomes risky, while **SCR** (`Shutdown Collateral Ratio`) completely halts borrowing in extreme scenarios. The **MCR** ensures individual loans remain safe, and the liquidation penalties incentivize proper system maintenance. These **immutable parameters** create a foundation of trust.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 29,
+          "end": 42
+        }
+      ],
+      "title": "",
+      "id": "60811"
+    },
+    {
+      "type": "highlight",
+      "description": "The constructor performs **parameter validation** to ensure the system starts in a safe state. Lines 80-86 enforce strict bounds - collateral ratios must be between 100% and 200%, liquidation penalties must be reasonable, and relationships between penalties must be logical. Without these checks, incorrect parameters could make the system either too risky or completely unusable.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 71,
+          "end": 86
+        }
+      ],
+      "title": "",
+      "id": "60813"
+    },
+    {
+      "type": "highlight",
+      "description": "Once validated, the parameters are set as **immutable values**. This **immutability** is a **design choice** that provides certainty to users - these fundamental system rules can never change, eliminating governance risks around **core safety parameters**.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 88,
+          "end": 94
+        }
+      ],
+      "title": "",
+      "id": "60815"
+    },
+    {
+      "type": "highlight",
+      "description": "The `setAddresses` function reveals the registry's **one-time setup pattern**. All contract addresses must be set simultaneously because they're interdependent - the system only works when all pieces are connected. This atomic operation ensures the system launches in a complete, functional state.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 96,
+          "end": 114
+        }
+      ],
+      "title": "",
+      "id": "60817"
+    },
+    {
+      "type": "highlight",
+      "description": "The final line is perhaps the most important - ownership is permanently renounced. This makes the registry **immutable after deployment**, providing users with certainty that the system's core connections and parameters can never be changed. This is a fundamental trust mechanism in decentralized finance.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 135,
+          "end": 135
+        }
+      ],
+      "title": "",
+      "id": "60816"
+    },
+    {
+      "type": "mcq",
+      "description": "What is the direct consequence of the `_renounceOwnership()` call on line 135 after `setAddresses()` has been executed?\n\nOptions:\n\n A). The contract addresses stored in the registry become permanently immutable.\n\nB). The owner must transfer ownership to a new address to lock the addresses.\n\nC). Only the immutable system parameters (e.g., MCR, CCR) are locked; addresses can still be updated.\n\nD). The function can be called again by a new owner to update a subset of the addresses.\n\n\nCorrect: A). The contract addresses stored in the registry become permanently immutable.\n\nExplanation: The correct answer is that the addresses become permanently immutable. The `setAddresses` function is protected by the `onlyOwner` modifier. By calling `_renounceOwnership()` at the end of this function, the owner role is permanently removed. This prevents any future calls to `setAddresses`, effectively locking the contract addresses in place. The other options are incorrect because ownership is nullified, not transferred, and this action is what locks the addresses, not the `immutable` keyword which applies to the system parameters set in the constructor.",
+      "title": "",
+      "id": "60849",
+      "text": "What is the direct consequence of the `_renounceOwnership()` call on line 135 after `setAddresses()` has been executed?",
+      "answers": [
+        "The contract addresses stored in the registry become permanently immutable.",
+        "The owner must transfer ownership to a new address to lock the addresses.",
+        "Only the immutable system parameters (e.g., MCR, CCR) are locked; addresses can still be updated.",
+        "The function can be called again by a new owner to update a subset of the addresses."
+      ],
+      "correct": 0,
+      "explanation": "The correct answer is that the addresses become permanently immutable. The `setAddresses` function is protected by the `onlyOwner` modifier. By calling `_renounceOwnership()` at the end of this function, the owner role is permanently removed. This prevents any future calls to `setAddresses`, effectively locking the contract addresses in place. The other options are incorrect because ownership is nullified, not transferred, and this action is what locks the addresses, not the `immutable` keyword which applies to the system parameters set in the constructor."
+    },
+    {
+      "type": "textOnly",
+      "description": "**This registry pattern** is a common approach in complex **DeFi systems**. It allows modular design while ensuring all contracts can find each other, provides a single source of truth for system parameters, and creates immutable guarantees about the system's fundamental operation. This pattern is fundamental to how the entire **Asymmetry protocol** functions.",
+      "title": "",
+      "id": "60852"
+    },
+    {
+      "type": "textOnly",
+      "description": "This registry pattern is a common feature in complex DeFi systems. It allows modular design while ensuring all contracts can find each other, provides a single source of truth for system parameters, and creates immutable guarantees about the system's fundamental operation. This pattern is central to how the entire Asymmetry protocol functions.",
+      "title": "",
+      "id": "60850"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "title": "2.3: AddressesRegistry: Constructor",
+  "id": "nlJ7faZlAAeUv7TH3agvGTCFdbJa/A6Rc9/E5jPVHJk=",
+  "originalId": 5023,
+  "position": 4,
+  "type": "text",
+  "steps": [
+    {
+      "type": "revealFiles",
+      "files": [
+        "contracts/src/AddressesRegistry.sol"
+      ],
+      "description": "The `AddressesRegistry` constructor initializes the immutable parameters of the system. Let's break down how it works.",
+      "title": "",
+      "id": "60752"
+    },
+    {
+      "type": "highlight",
+      "description": "The `constructor` takes several arguments that represent the core system `parameters`. These `parameters` are critical for the stability and security of the protocol.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 71,
+          "end": 79
+        }
+      ],
+      "title": "",
+      "id": "60753"
+    },
+    {
+      "type": "highlight",
+      "description": "Before storing the parameters, the constructor performs a series of validation checks. For example, it ensures that the **Critical Collateral Ratio (CCR)** and **Minimum Collateral Ratio (MCR)** are within a reasonable range (between 100% and 200%). These checks are vital to prevent the system from being deployed in an unsafe or misconfigured state.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 80,
+          "end": 86
+        }
+      ],
+      "title": "",
+      "id": "60754"
+    },
+    {
+      "type": "highlight",
+      "description": "After the parameters have been validated, they are assigned to the contract's immutable state variables. Because these variables are **immutable**, their values are set once at deployment and can never be changed. This provides a strong guarantee about the core properties of the system.",
+      "file": "contracts/src/AddressesRegistry.sol",
+      "highlight": [
+        {
+          "start": 88,
+          "end": 93
+        }
+      ],
+      "title": "",
+      "id": "60755"
+    },
+    {
+      "type": "mcq",
+      "description": "What is the primary purpose of the validation checks on lines 80-86 in the constructor?\n\nOptions:\n\n A). To prevent deploying the protocol with parameters that would create an unsafe or non-functional state from the start.\n\nB). To allow the owner to change the parameters later if they are found to be invalid.\n\nC). To ensure the immutable variables can be written correctly to the contract's bytecode.\n\n\nCorrect: A). To prevent deploying the protocol with parameters that would create an unsafe or non-functional state from the start.\n\nExplanation: The correct answer is about preventing an unsafe initial state. The checks on lines 80-86 ensure that parameters like `MCR` and `CCR` are within a logical range before they are permanently set as `immutable` variables. The other options are incorrect because `immutable` variables cannot be changed after deployment, and these checks are for semantic safety, not for the technical process of writing to bytecode.",
+      "title": "",
+      "id": "60756",
+      "text": "What is the primary purpose of the validation checks on lines 80-86 in the constructor?",
+      "answers": [
+        "To prevent deploying the protocol with parameters that would create an unsafe or non-functional state from the start.",
+        "To allow the owner to change the parameters later if they are found to be invalid.",
+        "To ensure the immutable variables can be written correctly to the contract's bytecode."
+      ],
+      "correct": 0,
+      "explanation": "The correct answer is about preventing an unsafe initial state. The checks on lines 80-86 ensure that parameters like `MCR` and `CCR` are within a logical range before they are permanently set as `immutable` variables. The other options are incorrect because `immutable` variables cannot be changed after deployment, and these checks are for semantic safety, not for the technical process of writing to bytecode."
+    }
+  ]
+}
